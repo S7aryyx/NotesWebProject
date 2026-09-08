@@ -11,16 +11,32 @@ namespace LocalJsonModule.Repositories
 {
     public class UserJsonRepository : IUserJsonService
     {
+        private readonly string _filePath;
+        public UserJsonRepository() 
+        {
+            var dataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            _filePath = Path.Combine(dataPath, "users.json");
+
+            if (!File.Exists(_filePath))
+            {
+                File.WriteAllText(_filePath, "[]");
+            }
+        }
+
         public async Task<List<User>> LoadUsersAsync()
         {
-            Console.WriteLine($"Загрузка началась.\n(Поток:{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-
+            //Console.WriteLine($"Загрузка началась.\n(Поток:{System.Threading.Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 string original_json;
-                using (var file_stream = new FileStream("C:\\Users\\std\\source\\repos\\ConsoleApp1\\ConsoleApp1\\Data\\users.json",
-                    FileMode.OpenOrCreate, FileAccess.Read,
-                    FileShare.Read, bufferSize: 4096, useAsync: true))
+                using (var file_stream = new FileStream(_filePath,FileMode.OpenOrCreate,
+                    FileAccess.Read,FileShare.Read, bufferSize: 4096, useAsync: true))
                 using (var reader = new StreamReader(file_stream, Encoding.UTF8))
                 {
                     original_json = await reader.ReadToEndAsync();
@@ -94,33 +110,37 @@ namespace LocalJsonModule.Repositories
 
         public async Task AddUserAsync(string newEmail, string newLogin, string newPassword)
         {
-            var users = await LoadUsersAsync();
-            int actual_id = (users.Count() + 1);
-            Console.WriteLine(actual_id);
-
-            //Прописать метод для поиска НОВОГО , айди не через i++ ,а
-            //через перебор доступных id с 0 до users.Count();
-
-            var NewUser = new User
+            try
             {
-                id = actual_id,
-                login = newLogin,
-                email = newEmail,
-                password = newPassword
-            };
+                var users = await LoadUsersAsync();
+                int actual_id = (users.Count() + 1);
+                Console.WriteLine(actual_id);
 
-            users.Add(NewUser);
-            await SaveUsersAsync(users);
+                var NewUser = new User
+                {
+                    id = actual_id,
+                    login = newLogin,
+                    email = newEmail,
+                    password = newPassword
+                };
+
+                users.Add(NewUser);
+                await SaveUsersAsync(users);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public async Task SaveUsersAsync(List<User> users)
         {
-            Console.WriteLine($"Загрузка началась.\n(Поток:" +
-                $"{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            //Console.WriteLine($"Загрузка началась.\n(Поток:" +
+            //    $"{System.Threading.Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 string original_json;
-                using (var file_stream = new FileStream("C:\\Users\\std\\source\\repos\\ConsoleApp1\\ConsoleApp1\\Data\\users.json",
+                using (var file_stream = new FileStream(_filePath,
                     FileMode.Create, FileAccess.Write,
                     FileShare.None, bufferSize: 4096, useAsync: true))
                 using (var writer = new StreamWriter(file_stream, Encoding.UTF8))
