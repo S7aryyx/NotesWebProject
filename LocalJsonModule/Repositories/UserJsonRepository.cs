@@ -114,7 +114,7 @@ namespace LocalJsonModule.Repositories
             {
                 var users = await LoadUsersAsync();
                 int actual_id = (users.Count() + 1);
-                Console.WriteLine(actual_id);
+                Console.WriteLine($"Добавление пользователя с ID: {actual_id}");
 
                 var NewUser = new User
                 {

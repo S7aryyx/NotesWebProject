@@ -1,24 +1,35 @@
 ﻿
 using LocalJsonModule.Repositories;
+using LocalJsonModule.Services;
 
 namespace LocalJsonModule
 {
+    class ConsoleDatPathProvider : IDataPathProvider
+    {
+        public string DataPath { get; }
+
+        public ConsoleDatPathProvider()
+        {
+            DataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            if (!Directory.Exists(DataPath))
+            {
+                Directory.CreateDirectory(DataPath);
+            }
+        }
+    }
+
     public class Program
     {
-
         static async Task Main()
         {
-            var _UserJsonRepository = new UserJsonRepository();
-            var _NoteJsonRepository = new NoteJsonRepository();
+            var pathProvider = new ConsoleDatPathProvider();
+            var UserRepo = new UserJsonRepository(pathProvider);
+            var NoteRepo = new NoteJsonRepository(pathProvider);
 
+            var users = await UserRepo.LoadUsersAsync();
+            Console.WriteLine($"Найдено {users.Count} пользователей");
 
-            await _UserJsonRepository.AddUserAsync("User@mail.ru", "User", "silniy_password");
-
-            var all_users = await _UserJsonRepository.LoadUsersAsync();
-            foreach (var user in all_users)
-            {
-                Console.WriteLine($"{user.id} | {user.login} | {user.email} | {user.password}");
-            }
+            await UserRepo.AddUserAsync("example@mail.ru", "newUser", "newPass");
         }
     }
 }
