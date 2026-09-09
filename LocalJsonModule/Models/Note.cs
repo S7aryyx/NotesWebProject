@@ -8,7 +8,7 @@ namespace LocalJsonModule.Models
 {
     public class Note
     {
-        public int id { get; set; }
+        public Guid id { get; set; }
         public string title { get; set; }
         public string description { get; set; }
         public int ownerId { get; set; }

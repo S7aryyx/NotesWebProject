@@ -1,5 +1,5 @@
-﻿
-using LocalJsonModule.Repositories;
+﻿using LocalJsonModule.Repositories;
+using LocalJsonModule.Repositories.Json;
 using LocalJsonModule.Services;
 
 namespace LocalJsonModule

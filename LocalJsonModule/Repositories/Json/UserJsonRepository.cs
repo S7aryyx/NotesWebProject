@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LocalJsonModule.Services;
-namespace LocalJsonModule.Repositories
+namespace LocalJsonModule.Repositories.Json
 {
     public class UserJsonRepository : IUserJsonService
     {
@@ -28,10 +28,8 @@ namespace LocalJsonModule.Repositories
                 File.WriteAllText(_filePath, "[]");
             }
         }
-
         public async Task<List<User>> LoadUsersAsync()
         {
-            //Console.WriteLine($"Загрузка началась.\n(Поток:{System.Threading.Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 string original_json;
@@ -57,13 +55,12 @@ namespace LocalJsonModule.Repositories
                 return new List<User>();
             }
         }
-
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User> GetUserByLoginAsync(string login)
         {
             try
             {
                 var users = await LoadUsersAsync();
-                var user = users.FirstOrDefault(u => u.id == id);
+                var user = users.FirstOrDefault(u => u.login == login);
 
                 if (user == null)
                 {
@@ -78,20 +75,19 @@ namespace LocalJsonModule.Repositories
             }
 
         }
-
-        public async Task<bool> UpdateUserByIdAsync(int id, string newEmail, string newLogin, string newPassword)
+        public async Task<bool> UpdateUserByLoginAsync(string login, string newEmail, string newLogin, string newPassword)
         {
             try
             {
                 var users = await LoadUsersAsync();
-                var user = users.FirstOrDefault(u => u.id == id);
+                var user = users.FirstOrDefault(u => u.login == login);
 
                 if (user != null)
                 {
                     user.email = newEmail;
                     user.login = newLogin;
                     user.password = newPassword;
-                    Console.WriteLine($"Данные пользователя {id} , успешно изменены");
+                    Console.WriteLine($"Данные пользователя {login} , успешно изменены");
                     await SaveUsersAsync(users);
                     return true;
                 }
@@ -103,22 +99,18 @@ namespace LocalJsonModule.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Не удалось изменить данный пользователя {id} : {ex.Message}");
+                Console.WriteLine($"Не удалось изменить данный пользователя {login} : {ex.Message}");
                 return false;
             }
         }
-
         public async Task AddUserAsync(string newEmail, string newLogin, string newPassword)
         {
             try
             {
                 var users = await LoadUsersAsync();
-                int actual_id = (users.Count() + 1);
-                Console.WriteLine($"Добавление пользователя с ID: {actual_id}");
-
                 var NewUser = new User
                 {
-                    id = actual_id,
+                    id = Guid.NewGuid(),
                     login = newLogin,
                     email = newEmail,
                     password = newPassword
@@ -132,11 +124,8 @@ namespace LocalJsonModule.Repositories
                 Console.WriteLine(ex.Message);
             }
         }
-
         public async Task SaveUsersAsync(List<User> users)
         {
-            //Console.WriteLine($"Загрузка началась.\n(Поток:" +
-            //    $"{System.Threading.Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 string original_json;
@@ -153,13 +142,13 @@ namespace LocalJsonModule.Repositories
                 Console.WriteLine($"Ошибка при загрузке данных.{ex.Message}");
             }
         }
-        public async Task<bool> DeleteUserByIdAsync(int id)
+        public async Task<bool> DeleteUserByLoginAsync(string login)
         {
             var users = await LoadUsersAsync();
 
             try
             {
-                var user_to_delete = users.FirstOrDefault(u => u.id == id);
+                var user_to_delete = users.FirstOrDefault(u => u.login == login);
 
                 if (user_to_delete == null)
                 {

@@ -10,12 +10,12 @@ namespace LocalJsonModule.Interfaces
     public interface INoteJsonService
     {
         Task<List<Note>> LoadNotesAsync();
-        Task<Note> GetNoteByIdAsync(int id);
+        Task<Note> GetNoteByIdAsync(Guid id);
         Task<List<Note>> GetNotesByOwnerIdAsync(int ownerId);
-        Task<bool> UpdateNoteByIdAsync(int id, string newTitle, string newDescription);
+        Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newDescription);
         Task AddNoteAsync(string newTitle, string newDescription, int ownerId);
         Task SaveNoteAsync(List<Note> notes);
-        Task<bool> DeleteNoteByIdAsync(int id);
+        Task<bool> DeleteNoteByIdAsync(Guid id);
         Task<bool> DeleteNotesByOwnerIdAsync(int ownerId);
     }
 }

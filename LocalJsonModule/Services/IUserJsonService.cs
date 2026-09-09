@@ -10,10 +10,10 @@ namespace LocalJsonModule.Interfaces
     public interface IUserJsonService
     {
         Task<List<User>> LoadUsersAsync();
-        Task<User> GetUserByIdAsync(int id);
-        Task<bool> UpdateUserByIdAsync(int id, string newEmail, string newLogin, string newPassword);
+        Task<User> GetUserByLoginAsync(string login);
+        Task<bool> UpdateUserByLoginAsync(string login, string newEmail, string newLogin, string newPassword);
         Task AddUserAsync(string newEmail, string newLogin, string newPassword);
         Task SaveUsersAsync(List<User> users);
-        Task<bool> DeleteUserByIdAsync(int id);
+        Task<bool> DeleteUserByLoginAsync(string login);
     }
 }

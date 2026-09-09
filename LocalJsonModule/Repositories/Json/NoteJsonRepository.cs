@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using LocalJsonModule.Services;
 
-namespace LocalJsonModule.Repositories
+namespace LocalJsonModule.Repositories.Json
 {
     public class NoteJsonRepository : INoteJsonService
     {
@@ -29,7 +29,6 @@ namespace LocalJsonModule.Repositories
                 File.WriteAllText(_filePath, "[]");
             }
         }
-
         public async Task<List<Note>> LoadNotesAsync()
         {
             try
@@ -58,8 +57,7 @@ namespace LocalJsonModule.Repositories
                 return new List<Note>();
             }
         }
-
-        public async Task<Note> GetNoteByIdAsync(int id)
+        public async Task<Note> GetNoteByIdAsync(Guid id)
         {
             try
             {
@@ -92,8 +90,7 @@ namespace LocalJsonModule.Repositories
             Console.WriteLine($"В данный момент метод DeleteNotesByOwnerIdAsync не реализован");
             return false;
         }
-
-        public async Task<bool> UpdateNoteByIdAsync(int id, string newTitle, string newDescription)
+        public async Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newDescription)
         {
             try
             {
@@ -122,7 +119,7 @@ namespace LocalJsonModule.Repositories
                 var notes = await LoadNotesAsync();
                 var newNote = new Note
                 {
-                    id = (notes.Count + 1),
+                    id = Guid.NewGuid(),
                     title = newTitle,
                     description = newDescription,
                     ownerId = ownerId
@@ -154,7 +151,7 @@ namespace LocalJsonModule.Repositories
                 Console.WriteLine($"Ошибка при загрузке данных.{ex.Message}");
             }
         }
-        public async Task<bool> DeleteNoteByIdAsync(int id)
+        public async Task<bool> DeleteNoteByIdAsync(Guid id)
         {
             try
             {

@@ -26,24 +26,20 @@ namespace LocalWebModule.Controllers
             }
             return Ok(users);
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{login}")]
+        public async Task<IActionResult> GetUserByLogin(string login)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByLoginAsync(login);
 
             if (user == null)
             {
-                return NotFound($"Пользователь с ID {id} не найден.");
+                return NotFound($"Пользователь с логином {login} не найден.");
             }
             return Ok(user);
-            //Вариативно можно привести RETURN OK в формат 
-            //логин + пароль
 
         }
-
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] user_pattern up)
+        public async Task<IActionResult> CreateUser([FromBody] User_DTO up)
         {
             if (up.login == null || up.password == null || up.email == null)
             {
@@ -52,25 +48,25 @@ namespace LocalWebModule.Controllers
             await _userService.AddUserAsync(up.email, up.login, up.password);
             return Ok();
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id , [FromBody] user_pattern up)
+        [HttpPut("{login}")]
+        public async Task<IActionResult> UpdateUserByLogin(string login, [FromBody] User_DTO up)
         {
             if (up.login == null || up.password == null || up.email== null)
             { 
                 return BadRequest("Логин, пароль и email являются обязательными.");
             }
 
-            var status = await _userService.UpdateUserByIdAsync(id, up.email, up.login, up.password);
+            var status = await _userService.UpdateUserByLoginAsync(login, up.email, up.login, up.password);
             if (status == false)
             {
                 return NotFound("Ошибка при обновлении пользователя.");
             }
             return Ok();
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        [HttpDelete("{login}")]
+        public async Task<IActionResult> DeleteUserByLogin(string login)
         {
-           var status = await _userService.DeleteUserByIdAsync(id);
+           var status = await _userService.DeleteUserByLoginAsync(login);
             if (status == false)
             {
                 return NotFound("Ошибка при удалении пользователя.");
@@ -78,7 +74,7 @@ namespace LocalWebModule.Controllers
             return Ok();
         }
     }
-    public class user_pattern //Вспомогательный класс для корректной настройки принимаемых данных. Класс DTO (Data Temple Object) , Шаблон данных объекта
+    public class User_DTO
     {
         public string login { get; set; }
         public string password { get; set; }
