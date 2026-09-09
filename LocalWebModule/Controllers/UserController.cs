@@ -43,24 +43,24 @@ namespace LocalWebModule.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] string newLogin , string newPasssword , string newEmail)
+        public async Task<IActionResult> CreateUser([FromBody] user_pattern up)
         {
-            if (newLogin == null || newPasssword == null || newEmail == null)
+            if (up.login == null || up.password == null || up.email == null)
             {
                 return BadRequest("Логин, пароль и email являются обязательными.");
             }
-            await _userService.AddUserAsync(newEmail, newLogin, newPasssword);
+            await _userService.AddUserAsync(up.email, up.login, up.password);
             return Ok();
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id , [FromBody] string newLogin, string newPasssword, string newEmail)
+        public async Task<IActionResult> UpdateUser(int id , [FromBody] user_pattern up)
         {
-            if (newLogin == null || newPasssword == null || newEmail == null)
-            {
+            if (up.login == null || up.password == null || up.email== null)
+            { 
                 return BadRequest("Логин, пароль и email являются обязательными.");
             }
 
-            var status = await _userService.UpdateUserByIdAsync(id, newEmail, newLogin, newPasssword);
+            var status = await _userService.UpdateUserByIdAsync(id, up.email, up.login, up.password);
             if (status == false)
             {
                 return NotFound("Ошибка при обновлении пользователя.");
@@ -77,5 +77,11 @@ namespace LocalWebModule.Controllers
             }
             return Ok();
         }
+    }
+    public class user_pattern //Вспомогательный класс для корректной настройки принимаемых данных. Класс DTO (Data Temple Object) , Шаблон данных объекта
+    {
+        public string login { get; set; }
+        public string password { get; set; }
+        public string email { get; set; }
     }
 }
