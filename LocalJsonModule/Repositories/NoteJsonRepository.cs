@@ -6,15 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LocalJsonModule.Services;
 
 namespace LocalJsonModule.Repositories
 {
     public class NoteJsonRepository : INoteJsonService
     {
         private readonly string _filePath;
-        public NoteJsonRepository()
+        public NoteJsonRepository(IDataPathProvider dataPathProvider)
         {
-            var dataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            var dataPath = dataPathProvider.DataPath;
 
             if (!Directory.Exists(dataPath))
             {
@@ -110,7 +111,7 @@ namespace LocalJsonModule.Repositories
             } 
             catch (Exception ex) 
             {
-                Console.WriteLine(ex.ToString()); 
+                Console.WriteLine(ex.Message); 
                 return false; 
             }
         }

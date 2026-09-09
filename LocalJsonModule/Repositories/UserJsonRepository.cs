@@ -6,16 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
+using LocalJsonModule.Services;
 namespace LocalJsonModule.Repositories
 {
     public class UserJsonRepository : IUserJsonService
     {
         private readonly string _filePath;
-        public UserJsonRepository() 
+        public UserJsonRepository(IDataPathProvider dataPathProvider)
         {
-            var dataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            
+            var dataPath = dataPathProvider.DataPath;
+
             if (!Directory.Exists(dataPath))
             {
                 Directory.CreateDirectory(dataPath);
