@@ -1,10 +1,8 @@
-namespace LocalJsonModule.Models;
+namespace LocalJsonModule.DTOs.Notes;
 
-public class Note
+public class CreateNoteRequest
 {
-    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public Guid OwnerId { get; set; }
-    public DateTime DateOfCreate { get; set; }
 }

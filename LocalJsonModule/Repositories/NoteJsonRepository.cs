@@ -1,55 +1,94 @@
-﻿using LocalJsonModule.Interfaces;
+using System.Text.Json;
+using LocalJsonModule.Data;
 using LocalJsonModule.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LocalJsonModule.Repositories
+namespace LocalJsonModule.Repositories;
+
+public class NoteJsonRepository : INoteRepository
 {
-    public class NoteJsonRepository : INoteJsonService
+    private readonly IDataPathProvider _dataPathProvider;
+
+    public NoteJsonRepository(IDataPathProvider dataPathProvider)
     {
-        public Task<List<Note>> LoadNotesAsync()
+        _dataPathProvider = dataPathProvider;
+    }
+
+    public async Task<List<Note>> GetAllAsync()
+    {
+        string filePath = _dataPathProvider.GetNotesFilePath();
+
+        if (!File.Exists(filePath))
         {
-            return null;
+            return new List<Note>();
         }
 
-        public Task<List<Note>> GetNoteByIdAsync(int id)
+        string json = await File.ReadAllTextAsync(filePath);
+
+        if (string.IsNullOrWhiteSpace(json))
         {
-            return null;
+            return new List<Note>();
         }
 
-        //Данный метод под вопросом , тк связывать JSON файлы напрямую не очень хорошо,
-        //Данный метод 100% будет в Репозитории БД...
-        public Task<List<Note>> GetNotesByOwnerIdAsync(int ownerId)
-        {
-            return null;
-        }
-        //Второй метод из разряда "Под вопросом" , метод , разом удаляющий
-        //все заметки пользователя по его ID , в случае удаления пользователя из системы.
-        public Task<bool> DeleteNotesByOwnerIdAsync(int ownerId)
-        {
-            return null;
-        }
+        var notes = JsonSerializer.Deserialize<List<Note>>(json);
+        return notes;
+             
+    }
 
-        public Task<bool> UpdateNoteByIdAsync(int id, string newTitle, string newDescription)
-        {
-            return null;
-        }
-        public Task AddNoteAsync(string newTitle, string newDescription, int ownerId)
-        {
-            return null;
-        }
-        public Task SaveNoteAsync(List<Note> notes)
-        {
-            return null;
-        }
-        public Task<bool> DeleteNoteByIdAsync(int id)
-        {
-            return null;
-        }
+    public async Task<Note> GetByIdAsync(Guid id)
+    {
+        var notes = await GetAllAsync();
+        var note = notes.FirstOrDefault(n => n.Id == id);
+        return note;
+    }
 
-        
+    public async Task<List<Note>> GetByOwnerIdAsync(Guid ownerId)
+    {
+        var notes = await GetAllAsync();
+        var note = notes.Where(n => n.OwnerId == ownerId).ToList();
+        return note;
+    }
+
+    public async Task AddAsync(Note note)
+    {
+        var notes = await GetAllAsync();
+        notes.Add(note);
+        await SaveAllAsync(notes);
+    }
+
+    public async Task UpdateAsync(Note note)
+    {
+       var notes = await GetAllAsync();
+
+       var noteToUpdate = notes.FirstOrDefault(n => n.Id == note.Id);
+       noteToUpdate.Title = note.Title;
+       noteToUpdate.Content = note.Content;
+       await SaveAllAsync(notes);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var notes = await GetAllAsync();
+        Note note = notes.FirstOrDefault(n => n.Id == id);
+
+        if (note == null)
+        {
+            return;
+        }
+        notes.Remove(note);
+        await SaveAllAsync(notes);
+    }
+
+    public async Task DeleteByOwnerIdAsync(Guid ownerId)
+    {
+        List<Note> notes = await GetAllAsync();
+        notes.RemoveAll(n => n.OwnerId == ownerId);
+        await SaveAllAsync(notes);
+    }
+
+    private async Task SaveAllAsync(List<Note> notes)
+    {
+        string filePath = _dataPathProvider.GetNotesFilePath();
+        string json = JsonSerializer.Serialize(notes);
+        await File.WriteAllTextAsync(filePath, json);
     }
 }
