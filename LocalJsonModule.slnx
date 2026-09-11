@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LocalJsonModule/LocalJsonModule.csproj" />
+  <Project Path="LocalWebModule/LocalWebModule.csproj" />
+</Solution>

@@ -1,15 +1,17 @@
-using LocalJsonModule.Interfaces;
-using LocalJsonModule.Repositories.Json;
+using LocalJsonModule.DataPathProvider;
+using LocalJsonModule.Repositories;
 using LocalJsonModule.Services;
-using LocalWebModule.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IDataPathProvider, AppDataProvider>();
-builder.Services.AddScoped<IUserJsonService, UserJsonRepository>();
-builder.Services.AddScoped<INoteJsonService, NoteJsonRepository>();
+builder.Services.AddSingleton<IDataPathProvider, DataPathProvider>();
+builder.Services.AddScoped<IUserRepository, UserJsonRepository>();
+builder.Services.AddScoped<INoteRepository, NoteJsonRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<INoteService, NoteService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -18,9 +20,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

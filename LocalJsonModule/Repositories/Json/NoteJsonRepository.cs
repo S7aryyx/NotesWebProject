@@ -7,15 +7,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LocalJsonModule.Services;
+using LocalJsonModule.DataPathProvider;
 
 namespace LocalJsonModule.Repositories.Json
 {
-    public class NoteJsonRepository : INoteJsonService
+    public class NoteJsonRepository :  INoteJsonService
     {
         private readonly string _filePath;
         public NoteJsonRepository(IDataPathProvider dataPathProvider)
         {
-            var dataPath = dataPathProvider.DataPath;
+            var dataPath = dataPathProvider.GetNotesFilePath();
 
             if (!Directory.Exists(dataPath))
             {
@@ -62,7 +63,7 @@ namespace LocalJsonModule.Repositories.Json
             try
             {
                 var notes = await LoadNotesAsync();
-                var found_note = notes.FirstOrDefault(n => n.id == id);
+                var found_note = notes.FirstOrDefault(n => n.Id == id);
 
                 if (found_note == null)
                 {
@@ -76,26 +77,26 @@ namespace LocalJsonModule.Repositories.Json
                 return new Note();
             }
         }
-        public async Task<List<Note>> GetNotesByOwnerIdAsync(int ownerId)
+        public async Task<List<Note>> GetNotesByOwnerIdAsync(Guid ownerId)
         {
             //Данный метод под вопросом , тк связывать JSON файлы напрямую не очень хорошо,
             //Данный метод 100% будет в Репозитории БД...
             Console.WriteLine($"В данный момент метод GetNotesByOwnerIdAsync не реализован");
             return null;
         }
-        public async Task<bool> DeleteNotesByOwnerIdAsync(int ownerId)
+        public async Task<bool> DeleteNotesByOwnerIdAsync(Guid ownerId)
         {
             //Второй метод из разряда "Под вопросом" , метод , разом удаляющий
             //все заметки пользователя по его ID , в случае удаления пользователя из системы.
             Console.WriteLine($"В данный момент метод DeleteNotesByOwnerIdAsync не реализован");
             return false;
         }
-        public async Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newDescription)
+        public async Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newContent)
         {
             try
             {
                 var notes = await LoadNotesAsync();
-                var found_note = notes.FirstOrDefault(n => n.id == id);
+                var found_note = notes.FirstOrDefault(n => n.Id == id);
 
                 if (found_note == null)
                 {
@@ -103,7 +104,7 @@ namespace LocalJsonModule.Repositories.Json
                     return false;
                 }
 
-                found_note.title = newTitle; found_note.description = newDescription;
+                found_note.Title = newTitle; found_note.Content = newContent;
                 return true;
             } 
             catch (Exception ex) 
@@ -112,17 +113,17 @@ namespace LocalJsonModule.Repositories.Json
                 return false; 
             }
         }
-        public async Task AddNoteAsync(string newTitle, string newDescription, int ownerId)
+        public async Task AddNoteAsync(string newTitle, string newContent, Guid ownerId)
         {
             try
             {
                 var notes = await LoadNotesAsync();
                 var newNote = new Note
                 {
-                    id = Guid.NewGuid(),
-                    title = newTitle,
-                    description = newDescription,
-                    ownerId = ownerId
+                    Id = Guid.NewGuid(),
+                    Title = newTitle,
+                    Content = newContent,
+                    OwnerId = ownerId
                 };
 
                 notes.Add(newNote);
@@ -156,7 +157,7 @@ namespace LocalJsonModule.Repositories.Json
             try
             {
                 var notes = await LoadNotesAsync();
-                var noteToDelete = notes.FirstOrDefault(n => n.id == id);
+                var noteToDelete = notes.FirstOrDefault(n => n.Id == id);
 
                 if (noteToDelete == null)
                 {

@@ -1,12 +1,8 @@
 ﻿using LocalJsonModule.Interfaces;
 using LocalJsonModule.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using LocalJsonModule.Services;
+using LocalJsonModule.DataPathProvider;
 namespace LocalJsonModule.Repositories.Json
 {
     public class UserJsonRepository : IUserJsonService
@@ -14,7 +10,7 @@ namespace LocalJsonModule.Repositories.Json
         private readonly string _filePath;
         public UserJsonRepository(IDataPathProvider dataPathProvider)
         {
-            var dataPath = dataPathProvider.DataPath;
+            var dataPath = dataPathProvider.GetUsersFilePath();
 
             if (!Directory.Exists(dataPath))
             {
@@ -60,7 +56,7 @@ namespace LocalJsonModule.Repositories.Json
             try
             {
                 var users = await LoadUsersAsync();
-                var user = users.FirstOrDefault(u => u.login == login);
+                var user = users.FirstOrDefault(u => u.Login == login);
 
                 if (user == null)
                 {
@@ -80,13 +76,13 @@ namespace LocalJsonModule.Repositories.Json
             try
             {
                 var users = await LoadUsersAsync();
-                var user = users.FirstOrDefault(u => u.login == login);
+                var user = users.FirstOrDefault(u => u.Login == login);
 
                 if (user != null)
                 {
-                    user.email = newEmail;
-                    user.login = newLogin;
-                    user.password = newPassword;
+                    user.Email = newEmail;
+                    user.Login = newLogin;
+                    user.Password = newPassword;
                     Console.WriteLine($"Данные пользователя {login} , успешно изменены");
                     await SaveUsersAsync(users);
                     return true;
@@ -110,10 +106,10 @@ namespace LocalJsonModule.Repositories.Json
                 var users = await LoadUsersAsync();
                 var NewUser = new User
                 {
-                    id = Guid.NewGuid(),
-                    login = newLogin,
-                    email = newEmail,
-                    password = newPassword
+                    Id = Guid.NewGuid(),
+                    Login = newLogin,
+                    Email = newEmail,
+                    Password = newPassword
                 };
 
                 users.Add(NewUser);
@@ -148,7 +144,7 @@ namespace LocalJsonModule.Repositories.Json
 
             try
             {
-                var user_to_delete = users.FirstOrDefault(u => u.login == login);
+                var user_to_delete = users.FirstOrDefault(u => u.Login == login);
 
                 if (user_to_delete == null)
                 {
@@ -159,7 +155,7 @@ namespace LocalJsonModule.Repositories.Json
 
                 foreach (var user in users)
                 {
-                    Console.WriteLine($"{user.id} - {user.login} ");
+                    Console.WriteLine($"{user.Id} - {user.Login} ");
                 }
 
                 await SaveUsersAsync(users);

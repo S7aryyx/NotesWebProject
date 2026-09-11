@@ -1,83 +1,94 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using LocalJsonModule.Interfaces;
-using LocalJsonModule.Models;
+using LocalJsonModule.DTOs;
+using LocalJsonModule.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
-namespace LocalWebModule.Controllers
+namespace LocalWebModule.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UserController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    private readonly IUserService _userService;
+
+    public UserController(IUserService userService)
     {
-        private readonly IUserJsonService _userService;
+        _userService = userService;
+    }
 
-        public UserController(IUserJsonService userService)
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var users = await _userService.GetAllAsync();
+        return Ok(users);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var user = await _userService.GetByIdAsync(id);
+
+        if (user == null)
         {
-            _userService = userService;
+            return NotFound("Пользователь не найден.");
         }
+        return Ok(user);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+    [HttpGet("login/{login}")]
+    public async Task<IActionResult> GetByLogin(string login)
+    {
+        var user = await _userService.GetByLoginAsync(login);
+
+        if (user == null)
         {
-            var users = await _userService.LoadUsersAsync();
-
-            if (users == null)
-            {
-                return NotFound("Пользователи не найдены.");
-            }
-            return Ok(users);
+            return NotFound($"Пользователь с логином {login} не найден.");
         }
-        [HttpGet("{login}")]
-        public async Task<IActionResult> GetUserByLogin(string login)
-        {
-            var user = await _userService.GetUserByLoginAsync(login);
+        return Ok(user);
+    }
 
-            if (user == null)
-            {
-                return NotFound($"Пользователь с логином {login} не найден.");
-            }
-            return Ok(user);
-
-        }
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] User_DTO up)
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] UserDTO request)
+    {
+        try
         {
-            if (up.login == null || up.password == null || up.email == null)
-            {
-                return BadRequest("Логин, пароль и email являются обязательными.");
-            }
-            await _userService.AddUserAsync(up.email, up.login, up.password);
+            var user = await _userService.CreateAsync(request);
             return Ok();
         }
-        [HttpPut("{login}")]
-        public async Task<IActionResult> UpdateUserByLogin(string login, [FromBody] User_DTO up)
+        catch (Exception ex)
         {
-            if (up.login == null || up.password == null || up.email== null)
-            { 
-                return BadRequest("Логин, пароль и email являются обязательными.");
-            }
-
-            var status = await _userService.UpdateUserByLoginAsync(login, up.email, up.login, up.password);
-            if (status == false)
-            {
-                return NotFound("Ошибка при обновлении пользователя.");
-            }
-            return Ok();
-        }
-        [HttpDelete("{login}")]
-        public async Task<IActionResult> DeleteUserByLogin(string login)
-        {
-           var status = await _userService.DeleteUserByLoginAsync(login);
-            if (status == false)
-            {
-                return NotFound("Ошибка при удалении пользователя.");
-            }
-            return Ok();
+            return BadRequest(ex.Message);
         }
     }
-    public class User_DTO
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id,[FromBody] UserDTO request)
     {
-        public string login { get; set; }
-        public string password { get; set; }
-        public string email { get; set; }
+        try
+        {
+            bool updated = await _userService.UpdateAsync(id, request);
+
+            if (!updated)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        bool deleted = await _userService.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound("Пользователь не найден.");
+        }
+        return Ok();
     }
 }

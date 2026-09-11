@@ -11,11 +11,11 @@ namespace LocalJsonModule.Interfaces
     {
         Task<List<Note>> LoadNotesAsync();
         Task<Note> GetNoteByIdAsync(Guid id);
-        Task<List<Note>> GetNotesByOwnerIdAsync(int ownerId);
-        Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newDescription);
-        Task AddNoteAsync(string newTitle, string newDescription, int ownerId);
+        Task<List<Note>> GetNotesByOwnerIdAsync(Guid ownerId);
+        Task<bool> UpdateNoteByIdAsync(Guid id, string newTitle, string newContent);
+        Task AddNoteAsync(string newTitle, string newContent, Guid ownerId);
         Task SaveNoteAsync(List<Note> notes);
         Task<bool> DeleteNoteByIdAsync(Guid id);
-        Task<bool> DeleteNotesByOwnerIdAsync(int ownerId);
+        Task<bool> DeleteNotesByOwnerIdAsync(Guid ownerId);
     }
 }
