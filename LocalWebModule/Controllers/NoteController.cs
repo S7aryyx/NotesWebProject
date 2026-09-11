@@ -1,4 +1,4 @@
-using LocalJsonModule.DTOs;
+using LocalJsonModule.DTOs.Notes;
 using LocalJsonModule.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +42,7 @@ public class NoteController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] NoteDTO request)
+    public async Task<IActionResult> Create([FromBody] CreateNoteRequest request)
     {
         try
         {
@@ -56,7 +56,7 @@ public class NoteController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id,[FromBody] NoteDTO request)
+    public async Task<IActionResult> Update(Guid id,[FromBody] UpdateNoteRequest request)
     {
         try
         {
@@ -64,7 +64,7 @@ public class NoteController : ControllerBase
 
             if (!updated)
             {
-                return NotFound("Заметка не найдена.");
+                return BadRequest("Заметка не найдена.");
             }
             return Ok();
         }

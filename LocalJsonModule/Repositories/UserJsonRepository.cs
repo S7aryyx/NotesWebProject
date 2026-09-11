@@ -1,5 +1,5 @@
 using System.Text.Json;
-using LocalJsonModule.DataPathProvider;
+using LocalJsonModule.Data;
 using LocalJsonModule.Models;
 
 namespace LocalJsonModule.Repositories;
@@ -7,12 +7,6 @@ namespace LocalJsonModule.Repositories;
 public class UserJsonRepository : IUserRepository
 {
     private readonly IDataPathProvider _dataPathProvider;
-
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNameCaseInsensitive = true
-    };
 
     public UserJsonRepository(IDataPathProvider dataPathProvider)
     {
@@ -24,67 +18,64 @@ public class UserJsonRepository : IUserRepository
         string filePath = _dataPathProvider.GetUsersFilePath();
 
         if (!File.Exists(filePath))
+        {
             return new List<User>();
-
+        }
         string json = await File.ReadAllTextAsync(filePath);
 
         if (string.IsNullOrWhiteSpace(json))
+        {
             return new List<User>();
-
-        return JsonSerializer.Deserialize<List<User>>(json, _jsonOptions)
-               ?? new List<User>();
+        }
+        return JsonSerializer.Deserialize<List<User>>(json);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<User> GetByIdAsync(Guid id)
     {
-        List<User> users = await GetAllAsync();
-        return users.FirstOrDefault(user => user.Id == id);
+        var users = await GetAllAsync();
+        return users.FirstOrDefault(u => u.Id == id);
     }
 
-    public async Task<User?> GetByLoginAsync(string login)
+    public async Task<User> GetByLoginAsync(string login)
     {
-        List<User> users = await GetAllAsync();
-
-        return users.FirstOrDefault(user =>
-            user.Login.Equals(login, StringComparison.OrdinalIgnoreCase));
+        var users = await GetAllAsync();            
+        User user = users.FirstOrDefault(u => u.Login == login);
+        return user;
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<User> GetByEmailAsync(string email)
     {
-        List<User> users = await GetAllAsync();
-
-        return users.FirstOrDefault(user =>
-            user.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        var users = await GetAllAsync();
+        User user = users.FirstOrDefault(u => u.Email == email);
+        return user;
     }
 
     public async Task AddAsync(User user)
     {
-        List<User> users = await GetAllAsync();
+        var users = await GetAllAsync();
         users.Add(user);
         await SaveAllAsync(users);
     }
 
     public async Task UpdateAsync(User user)
     {
-        List<User> users = await GetAllAsync();
+        var users = await GetAllAsync();
 
-        int index = users.FindIndex(existingUser => existingUser.Id == user.Id);
-
-        if (index == -1)
-            return;
-
-        users[index] = user;
+        var UserToUpdate = users.FirstOrDefault(u => u.Id == user.Id);
+        UserToUpdate.Login = user.Login;
+        UserToUpdate.Email = user.Email;
         await SaveAllAsync(users);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         List<User> users = await GetAllAsync();
-        User? user = users.FirstOrDefault(existingUser => existingUser.Id == id);
+        User user = users.FirstOrDefault(u => u.Id == id);
 
         if (user == null)
+        {
             return;
-
+        }
         users.Remove(user);
         await SaveAllAsync(users);
     }
@@ -92,7 +83,7 @@ public class UserJsonRepository : IUserRepository
     private async Task SaveAllAsync(List<User> users)
     {
         string filePath = _dataPathProvider.GetUsersFilePath();
-        string json = JsonSerializer.Serialize(users, _jsonOptions);
+        string json = JsonSerializer.Serialize(users);
         await File.WriteAllTextAsync(filePath, json);
     }
 }

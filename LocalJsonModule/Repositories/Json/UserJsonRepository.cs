@@ -5,7 +5,7 @@ using System.Text.Json;
 using LocalJsonModule.DataPathProvider;
 namespace LocalJsonModule.Repositories.Json
 {
-    public class UserJsonRepository : IUserJsonService
+    public class UserJsonRepository : IUserJsonRepository
     {
         private readonly string _filePath;
         public UserJsonRepository(IDataPathProvider dataPathProvider)

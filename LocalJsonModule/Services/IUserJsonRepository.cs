@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LocalJsonModule.Interfaces
 {
-    public interface IUserJsonService
+    public interface IUserJsonRepository
     {
         Task<List<User>> LoadUsersAsync();
         Task<User> GetUserByLoginAsync(string login);

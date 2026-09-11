@@ -3,10 +3,16 @@
 GET {{LocalWebModule_HostAddress}}/api/User
 Accept: application/json
 
+###
+
 GET {{LocalWebModule_HostAddress}}/api/Note
 Accept: application/json
+
+###
+
 POST {{LocalWebModule_HostAddress}}/api/User
 Content-Type: application/json
+
 {
   "email": "test@example.com",
   "login": "test",

@@ -1,4 +1,4 @@
-using LocalJsonModule.DTOs;
+using LocalJsonModule.DTOs.Notes;
 using LocalJsonModule.Models;
 using LocalJsonModule.Repositories;
 
@@ -28,13 +28,12 @@ public class NoteService : INoteService
         return _repository.GetByOwnerIdAsync(ownerId);
     }
 
-    public async Task<Note> CreateAsync(NoteDTO request)
+    public async Task<Note> CreateAsync(CreateNoteRequest request)
     {
-        if (request.Title == null)
+        if (string.IsNullOrWhiteSpace(request.Title))
         {
-            Console.WriteLine("Название не может быть пустым");
+            Console.WriteLine("Название не может быть пустым.");
         }
-
         Note note = new Note()
         {
             Id = Guid.NewGuid(),
@@ -48,11 +47,11 @@ public class NoteService : INoteService
         return note;
     }
 
-    public async Task<bool> UpdateAsync(Guid id, NoteDTO request)
+    public async Task<bool> UpdateAsync(Guid id, UpdateNoteRequest request)
     {
-        if (request.Title == null)
-        { 
-            Console.WriteLine("Название не может быть пустым");
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            Console.WriteLine("Название не может быть пустым.");
             return false;
         }
 
@@ -60,10 +59,8 @@ public class NoteService : INoteService
 
         if (note == null)
         {
-            Console.WriteLine("Заметка не найдена");
             return false;
         }
-
         note.Title = request.Title;
         note.Content = request.Content;
 
@@ -77,7 +74,6 @@ public class NoteService : INoteService
 
         if (note == null)
         {
-            Console.WriteLine("Заметка не найдена");
             return false;
         }
         await _repository.DeleteAsync(id);
@@ -86,15 +82,13 @@ public class NoteService : INoteService
 
     public async Task<bool> DeleteByOwnerIdAsync(Guid ownerId)
     {
-        List<Note> notes = await _repository.GetByOwnerIdAsync(ownerId);
+        var notes = await _repository.GetByOwnerIdAsync(ownerId);
 
         if (notes.Count == 0)
         {
-            Console.WriteLine("Заметки не найдены");
             return false;
         }
         await _repository.DeleteByOwnerIdAsync(ownerId);
         return true;
     }
 }
-    

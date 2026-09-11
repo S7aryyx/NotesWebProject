@@ -1,6 +1,5 @@
-using LocalJsonModule.DTOs;
+using LocalJsonModule.DTOs.Users;
 using LocalJsonModule.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalWebModule.Controllers;
@@ -48,7 +47,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] UserDTO request)
+    public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
     {
         try
         {
@@ -62,7 +61,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id,[FromBody] UserDTO request)
+    public async Task<IActionResult> Update(Guid id,[FromBody] UpdateUserRequest request)
     {
         try
         {
@@ -72,11 +71,15 @@ public class UserController : ControllerBase
             {
                 return NotFound("Пользователь не найден.");
             }
-            return Ok();
+            return NoContent();
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
         }
     }
 
@@ -89,6 +92,6 @@ public class UserController : ControllerBase
         {
             return NotFound("Пользователь не найден.");
         }
-        return Ok();
+        return NoContent();
     }
 }

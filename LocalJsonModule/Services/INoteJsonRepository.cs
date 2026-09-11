@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LocalJsonModule.Interfaces
 {
-    public interface INoteJsonService
+    public interface INoteJsonRepository
     {
         Task<List<Note>> LoadNotesAsync();
         Task<Note> GetNoteByIdAsync(Guid id);

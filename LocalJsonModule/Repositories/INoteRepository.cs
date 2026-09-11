@@ -7,6 +7,7 @@ public interface INoteRepository
     Task<List<Note>> GetAllAsync();
     Task<Note?> GetByIdAsync(Guid id);
     Task<List<Note>> GetByOwnerIdAsync(Guid ownerId);
+
     Task AddAsync(Note note);
     Task UpdateAsync(Note note);
     Task DeleteAsync(Guid id);

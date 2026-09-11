@@ -11,7 +11,7 @@ using LocalJsonModule.DataPathProvider;
 
 namespace LocalJsonModule.Repositories.Json
 {
-    public class NoteJsonRepository :  INoteJsonService
+    public class NoteJsonRepository :  INoteJsonRepository
     {
         private readonly string _filePath;
         public NoteJsonRepository(IDataPathProvider dataPathProvider)

@@ -1,4 +1,4 @@
-using LocalJsonModule.DataPathProvider;
+using LocalJsonModule.Data;
 using LocalJsonModule.Repositories;
 using LocalJsonModule.Services;
 
@@ -14,6 +14,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 
 var app = builder.Build();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -21,5 +22,4 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.MapControllers();
-
 app.Run();

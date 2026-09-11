@@ -1,4 +1,4 @@
-using LocalJsonModule.DTOs;
+using LocalJsonModule.DTOs.Users;
 using LocalJsonModule.Models;
 using LocalJsonModule.Repositories;
 
@@ -18,31 +18,32 @@ public class UserService : IUserService
         return _repository.GetAllAsync();
     }
 
-    public Task<User?> GetByIdAsync(Guid id)
+    public Task<User> GetByIdAsync(Guid id)
     {
         return _repository.GetByIdAsync(id);
     }
 
-    public Task<User?> GetByLoginAsync(string login)
+    public Task<User> GetByLoginAsync(string login)
     {
         return _repository.GetByLoginAsync(login);
     }
 
-    public async Task<User> CreateAsync(UserDTO request)
+    public async Task<User> CreateAsync(CreateUserRequest request)
     {
-        if (request.Email == null || request.Login == null || request.Password == null)
+        if (request.Login == null || request.Email == null || request.Password == null)
         {
-            Console.WriteLine("Почта, логин и пароль не могут быть пустыми.");
+            Console.WriteLine("Логин, email и пароль не могут быть null.");
         }
+
         if (await _repository.GetByLoginAsync(request.Login) != null)
         {
             Console.WriteLine("Пользователь с таким логином уже существует.");
         }
+
         if (await _repository.GetByEmailAsync(request.Email) != null)
         {
             Console.WriteLine("Пользователь с таким email уже существует.");
         }
-
         User user = new User()
         {
             Id = Guid.NewGuid(),
@@ -55,33 +56,35 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<bool> UpdateAsync(Guid id, UserDTO request)
+    public async Task<bool> UpdateAsync(Guid id, UpdateUserRequest request)
     {
-        if (request.Email == null || request.Login == null || request.Password == null)
+        if (request.Login == null || request.Email == null || request.Password == null)
         {
-            Console.WriteLine("Почта , логин и пароль не могут быть пустыми.");
+            Console.WriteLine("Логин, email и пароль не могут быть null.");
             return false;
         }
 
-        User? user = await _repository.GetByIdAsync(id);
+        User user = await _repository.GetByIdAsync(id);
 
-        if (user == null) 
+        if (user == null)
         {
             return false;
         }
+        User existingLogin = await _repository.GetByLoginAsync(request.Login);
 
-        User? existingLogin = await _repository.GetByLoginAsync(request.Login);
         if (existingLogin != null && existingLogin.Id != id)
         {
             Console.WriteLine("Пользователь с таким логином уже существует.");
             return false;
         }
-        User? existingEmail = await _repository.GetByEmailAsync(request.Email);
+        
+        User existingEmail = await _repository.GetByEmailAsync(request.Email);
         if (existingEmail != null && existingEmail.Id != id)
         {
             Console.WriteLine("Пользователь с таким email уже существует.");
             return false;
         }
+
         user.Email = request.Email;
         user.Login = request.Login;
         user.Password = request.Password;
@@ -92,7 +95,7 @@ public class UserService : IUserService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        User? user = await _repository.GetByIdAsync(id);
+        User user = await _repository.GetByIdAsync(id);
 
         if (user == null)
         {
