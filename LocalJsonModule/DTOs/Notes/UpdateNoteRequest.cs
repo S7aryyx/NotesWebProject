@@ -4,4 +4,8 @@ public class UpdateNoteRequest
 {
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
+    public Guid? FolderId { get; set; }
+    public bool IsFavorite { get; set; }
+    public bool IsArchive { get; set; }
+    public string? NoteType { get; set; }
 }

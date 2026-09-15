@@ -18,32 +18,83 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var users = await _userService.GetAllAsync();
-        return Ok(users);
+        try
+        {
+            var users = await _userService.GetAllAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var user = await _userService.GetByIdAsync(id);
-
-        if (user == null)
+        try
         {
-            return NotFound("Пользователь не найден.");
+            var user = await _userService.GetByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return Ok(user);
         }
-        return Ok(user);
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpGet("login/{login}")]
     public async Task<IActionResult> GetByLogin(string login)
     {
-        var user = await _userService.GetByLoginAsync(login);
-
-        if (user == null)
+        try
         {
-            return NotFound($"Пользователь с логином {login} не найден.");
+            var user = await _userService.GetByLoginAsync(login);
+
+            if (user == null)
+            {
+                return NotFound($"Пользователь с логином {login} не найден.");
+            }
+
+            return Ok(user);
         }
-        return Ok(user);
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("email/{email}")]
+    public async Task<IActionResult> GetByEmail(string email)
+    {
+        try
+        {
+            var user = await _userService.GetByEmailAsync(email);
+
+            if (user == null)
+            {
+                return NotFound($"Пользователь с email {email} не найден.");
+            }
+
+            return Ok(user);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpPost]
@@ -52,16 +103,24 @@ public class UserController : ControllerBase
         try
         {
             var user = await _userService.CreateAsync(request);
-            return Ok();
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return StatusCode(500, ex.Message);
         }
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id,[FromBody] UpdateUserRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request)
     {
         try
         {
@@ -71,6 +130,7 @@ public class UserController : ControllerBase
             {
                 return NotFound("Пользователь не найден.");
             }
+
             return NoContent();
         }
         catch (ArgumentException ex)
@@ -81,17 +141,29 @@ public class UserController : ControllerBase
         {
             return Conflict(ex.Message);
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        bool deleted = await _userService.DeleteAsync(id);
-
-        if (!deleted)
+        try
         {
-            return NotFound("Пользователь не найден.");
+            bool deleted = await _userService.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return NoContent();
         }
-        return NoContent();
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 }

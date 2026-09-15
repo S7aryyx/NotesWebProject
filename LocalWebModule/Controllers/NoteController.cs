@@ -18,27 +18,63 @@ public class NoteController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var notes = await _noteService.GetAllAsync();
-        return Ok(notes);
+        try
+        {
+            var notes = await _noteService.GetAllAsync();
+            return Ok(notes);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var note = await _noteService.GetByIdAsync(id);
-
-        if (note == null)
+        try
         {
-            return NotFound("Заметка не найдена.");
+            var note = await _noteService.GetByIdAsync(id);
+
+            if (note == null)
+            {
+                return NotFound("Заметка не найдена.");
+            }
+
+            return Ok(note);
         }
-        return Ok(note);
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpGet("owner/{ownerId:guid}")]
     public async Task<IActionResult> GetByOwnerId(Guid ownerId)
     {
-        var notes = await _noteService.GetByOwnerIdAsync(ownerId);
-        return Ok(notes);
+        try
+        {
+            var notes = await _noteService.GetByOwnerIdAsync(ownerId);
+            return Ok(notes);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("folder/{folderId:guid}")]
+    public async Task<IActionResult> GetByFolderId(Guid folderId)
+    {
+        try
+        {
+            var notes = await _noteService.GetByFolderIdAsync(folderId);
+            return Ok(notes);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpPost]
@@ -47,16 +83,28 @@ public class NoteController : ControllerBase
         try
         {
             var note = await _noteService.CreateAsync(request);
-            return Ok();
+            return CreatedAtAction(nameof(GetById), new { id = note.Id }, note);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return StatusCode(500, ex.Message);
         }
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id,[FromBody] UpdateNoteRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateNoteRequest request)
     {
         try
         {
@@ -64,37 +112,86 @@ public class NoteController : ControllerBase
 
             if (!updated)
             {
-                return BadRequest("Заметка не найдена.");
+                return NotFound("Заметка не найдена.");
             }
-            return Ok();
+
+            return NoContent();
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
         }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        bool deleted = await _noteService.DeleteAsync(id);
-
-        if (!deleted)
+        try
         {
-            return NotFound("Заметка не найдена.");
+            bool deleted = await _noteService.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound("Заметка не найдена.");
+            }
+
+            return NoContent();
         }
-        return Ok();
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpDelete("owner/{ownerId:guid}")]
     public async Task<IActionResult> DeleteByOwnerId(Guid ownerId)
     {
-        bool deleted = await _noteService.DeleteByOwnerIdAsync(ownerId);
-
-        if (!deleted)
+        try
         {
-            return NotFound("У владельца нет заметок.");
+            bool deleted = await _noteService.DeleteByOwnerIdAsync(ownerId);
+
+            if (!deleted)
+            {
+                return NotFound("У владельца нет заметок.");
+            }
+
+            return NoContent();
         }
-        return Ok();
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpDelete("folder/{folderId:guid}")]
+    public async Task<IActionResult> DeleteByFolderId(Guid folderId)
+    {
+        try
+        {
+            bool deleted = await _noteService.DeleteByFolderIdAsync(folderId);
+
+            if (!deleted)
+            {
+                return NotFound("В папке нет заметок.");
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 }

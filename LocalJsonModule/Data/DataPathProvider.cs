@@ -15,6 +15,11 @@ public class DataPathProvider : IDataPathProvider
         return Path.Combine(_dataDirectory, "users.json");
     }
 
+    public string GetFoldersFilePath()
+    {
+        return Path.Combine(_dataDirectory, "folders.json");
+    }
+
     public string GetNotesFilePath()
     {
         return Path.Combine(_dataDirectory, "notes.json");

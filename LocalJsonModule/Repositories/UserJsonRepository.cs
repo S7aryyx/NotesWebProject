@@ -15,75 +15,112 @@ public class UserJsonRepository : IUserRepository
 
     public async Task<List<User>> GetAllAsync()
     {
-        string filePath = _dataPathProvider.GetUsersFilePath();
-
-        if (!File.Exists(filePath))
+        try
         {
-            return new List<User>();
-        }
-        string json = await File.ReadAllTextAsync(filePath);
+            string filePath = _dataPathProvider.GetUsersFilePath();
 
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return new List<User>();
+            if (!File.Exists(filePath))
+            {
+                return new List<User>();
+            }
+
+            string json = await File.ReadAllTextAsync(filePath);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new List<User>();
+            }
+
+            return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
         }
-        return JsonSerializer.Deserialize<List<User>>(json);
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException("Не удалось прочитать пользователей из JSON.", ex);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("Не удалось прочитать файл пользователей.", ex);
+        }
     }
 
-    public async Task<User> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
-        var users = await GetAllAsync();
+        List<User> users = await GetAllAsync();
         return users.FirstOrDefault(u => u.Id == id);
     }
 
-    public async Task<User> GetByLoginAsync(string login)
+    public async Task<User?> GetByLoginAsync(string login)
     {
-        var users = await GetAllAsync();            
-        User user = users.FirstOrDefault(u => u.Login == login);
-        return user;
+        List<User> users = await GetAllAsync();
+        return users.FirstOrDefault(u => u.Login == login);
     }
 
-    public async Task<User> GetByEmailAsync(string email)
+    public async Task<User?> GetByEmailAsync(string email)
     {
-        var users = await GetAllAsync();
-        User user = users.FirstOrDefault(u => u.Email == email);
-        return user;
+        List<User> users = await GetAllAsync();
+        return users.FirstOrDefault(u => u.Email == email);
     }
 
     public async Task AddAsync(User user)
     {
-        var users = await GetAllAsync();
-        users.Add(user);
-        await SaveAllAsync(users);
+        try
+        {
+            List<User> users = await GetAllAsync();
+            users.Add(user);
+            await SaveAllAsync(users);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("Не удалось сохранить пользователя.", ex);
+        }
     }
 
     public async Task UpdateAsync(User user)
     {
-        var users = await GetAllAsync();
+        List<User> users = await GetAllAsync();
+        User? userToUpdate = users.FirstOrDefault(u => u.Id == user.Id);
 
-        var UserToUpdate = users.FirstOrDefault(u => u.Id == user.Id);
-        UserToUpdate.Login = user.Login;
-        UserToUpdate.Email = user.Email;
+        if (userToUpdate == null)
+        {
+            throw new KeyNotFoundException("Пользователь не найден.");
+        }
+
+        userToUpdate.Login = user.Login;
+        userToUpdate.Email = user.Email;
+        userToUpdate.Password = user.Password;
+
         await SaveAllAsync(users);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         List<User> users = await GetAllAsync();
-        User user = users.FirstOrDefault(u => u.Id == id);
+        User? user = users.FirstOrDefault(u => u.Id == id);
 
         if (user == null)
         {
             return;
         }
+
         users.Remove(user);
         await SaveAllAsync(users);
     }
 
     private async Task SaveAllAsync(List<User> users)
     {
-        string filePath = _dataPathProvider.GetUsersFilePath();
-        string json = JsonSerializer.Serialize(users);
-        await File.WriteAllTextAsync(filePath, json);
+        try
+        {
+            string filePath = _dataPathProvider.GetUsersFilePath();
+            string json = JsonSerializer.Serialize(users, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            await File.WriteAllTextAsync(filePath, json);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("Не удалось записать файл пользователей.", ex);
+        }
     }
 }
