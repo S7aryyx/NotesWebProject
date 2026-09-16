@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "WaGosC2wch8=",
+  "dgSpecHash": "8hwD1Ts9BmE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Ilgam\\source\\repos\\LocalJsonModule\\LocalWebModule\\LocalWebModule.csproj",
+  "projectFilePath": "C:\\Projects\\LocalWebModule\\LocalWebModule.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Ilgam\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\Ilgam\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",

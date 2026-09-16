@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LocalWebModule")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d6dc6c456824b37c7a52381f6a009b8f5515871c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed0444e7baf7d4cd28b8cccacbfbd44ec2777a2f")]
 [assembly: System.Reflection.AssemblyProductAttribute("LocalWebModule")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LocalWebModule")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
