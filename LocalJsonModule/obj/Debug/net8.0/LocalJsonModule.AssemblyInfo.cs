@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LocalJsonModule")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed0444e7baf7d4cd28b8cccacbfbd44ec2777a2f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+50d56b8dfdedb484e23d0dc110d7c4affb3d15ca")]
 [assembly: System.Reflection.AssemblyProductAttribute("LocalJsonModule")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LocalJsonModule")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

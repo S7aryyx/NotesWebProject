@@ -1,8 +1,0 @@
-namespace LocalJsonModule.DTOs.Folders;
-
-public class CreateFolderRequest
-{
-    public string Title { get; set; } = string.Empty;
-    public Guid? ParentFolderId { get; set; }
-    public Guid OwnerId { get; set; }
-}

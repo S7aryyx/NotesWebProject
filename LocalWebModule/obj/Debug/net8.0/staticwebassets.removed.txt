@@ -1,0 +1,3 @@
+C:\Users\Akhmetov_i\source\repos\NotesWebProject\LocalWebModule\wwwroot\index.html
+C:\Users\Akhmetov_i\source\repos\NotesWebProject\LocalWebModule\wwwroot\login.html
+C:\Users\Akhmetov_i\source\repos\NotesWebProject\LocalWebModule\wwwroot\register.html
