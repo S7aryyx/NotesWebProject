@@ -87,7 +87,7 @@ public class UserJsonRepository : IUserRepository
 
         userToUpdate.Login = user.Login;
         userToUpdate.Email = user.Email;
-        userToUpdate.Password = user.Password;
+        userToUpdate.PasswordHash = user.PasswordHash;
 
         await SaveAllAsync(users);
     }

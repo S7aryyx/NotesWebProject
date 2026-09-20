@@ -1,6 +1,6 @@
 namespace LocalJsonModule.DTOs.Users;
 
-public class UpdateUserRequest
+public class RegisterRequest
 {
     public string Email { get; set; } = string.Empty;
     public string Login { get; set; } = string.Empty;

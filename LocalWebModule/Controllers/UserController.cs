@@ -1,5 +1,9 @@
 using LocalJsonModule.DTOs.Users;
+using LocalJsonModule.Models;
 using LocalJsonModule.Services;
+using LocalJsonModule.Services.Auth;
+using LocalJsonModule.Services.Register;
+using LocalJsonModule.Services.Update;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalWebModule.Controllers;
@@ -8,11 +12,17 @@ namespace LocalWebModule.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
+    private readonly IRegisterService _registerService;
+    private readonly IAuthService _authService;
+    private readonly IUpdateService _updateService;
     private readonly IUserService _userService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, IRegisterService registerService, IAuthService authService, IUpdateService updateService)
     {
         _userService = userService;
+        _registerService = registerService;
+        _authService = authService;
+        _updateService = updateService;
     }
 
     [HttpGet]
@@ -98,11 +108,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
+    public async Task<IActionResult> Register([FromBody] LocalJsonModule.DTOs.Users.RegisterRequest request)
     {
         try
         {
-            var user = await _userService.CreateAsync(request);
+            User user = await _registerService.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
         catch (ArgumentException ex)
@@ -119,12 +129,44 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request)
+    [HttpPost("auth")]
+    public async Task<IActionResult> Auth([FromBody] LoginRequest request)
     {
         try
         {
-            bool updated = await _userService.UpdateAsync(id, request);
+            var user = await _authService.LoginAsync(request);
+
+            if (user == null)
+            {
+                return BadRequest("Неверный логин или пароль.");
+            }
+
+            var response = new UserResponse
+            {
+                Id = user.Id,
+                Login = user.Login,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt
+            };
+
+            return Ok(response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRequest request)
+    {
+        try
+        {
+            bool updated = await _updateService.UpdateAsync(id, request);
 
             if (!updated)
             {
