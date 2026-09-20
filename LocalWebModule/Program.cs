@@ -4,6 +4,8 @@ using LocalJsonModule.Services;
 using LocalJsonModule.Services.Auth;
 using LocalJsonModule.Services.Register;
 using LocalJsonModule.Services.Update;
+using Microsoft.AspNetCore.Identity;
+using LocalJsonModule.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +22,7 @@ builder.Services.AddScoped<IUserRepository, UserJsonRepository>();
 builder.Services.AddScoped<IFolderRepository, FolderJsonRepository>();
 builder.Services.AddScoped<INoteRepository, NoteJsonRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<INoteService, NoteService>();
