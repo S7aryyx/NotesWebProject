@@ -1,5 +1,6 @@
 using System.Text.Json;
 using LocalJsonModule.Data;
+using LocalJsonModule.DTOs.Users;
 using LocalJsonModule.Models;
 
 namespace LocalJsonModule.Repositories;
@@ -13,7 +14,7 @@ public class UserJsonRepository : IUserRepository
         _dataPathProvider = dataPathProvider;
     }
 
-    public async Task<List<User>> GetAllAsync()
+    public async Task<List<UserResponse>> GetAllAsync()
     {
         try
         {
@@ -21,17 +22,17 @@ public class UserJsonRepository : IUserRepository
 
             if (!File.Exists(filePath))
             {
-                return new List<User>();
+                return new List<UserResponse>();
             }
 
             string json = await File.ReadAllTextAsync(filePath);
 
             if (string.IsNullOrWhiteSpace(json))
             {
-                return new List<User>();
+                return new List<UserResponse>();
             }
 
-            return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
+            return JsonSerializer.Deserialize<List<UserResponse>>(json) ?? new List<UserResponse>();
         }
         catch (JsonException ex)
         {
@@ -41,17 +42,17 @@ public class UserJsonRepository : IUserRepository
         {
             throw new InvalidOperationException("Не удалось прочитать файл пользователей.", ex);
         }
-    }
+    } //Теперь возвращает UserRespose
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<UserResponse?> GetByIdAsync(Guid id)
     {
-        List<User> users = await GetAllAsync();
+        List<UserResponse> users = await GetAllAsync();
         return users.FirstOrDefault(u => u.Id == id);
     }
 
-    public async Task<User?> GetByLoginAsync(string login)
+    public async Task<UserResponse?> GetByLoginAsync(string login)
     {
-        List<User> users = await GetAllAsync();
+        List<UserResponse> users = await GetAllAsync();
         return users.FirstOrDefault(u => u.Login == login);
     }
 
