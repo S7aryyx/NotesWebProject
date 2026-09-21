@@ -1,11 +1,12 @@
 using LocalJsonModule.DTOs.Notes;
 using LocalJsonModule.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 namespace LocalWebModule.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/notes")]
 public class NoteController : ControllerBase
 {
     private readonly INoteService _noteService;
@@ -49,7 +50,7 @@ public class NoteController : ControllerBase
         }
     }
 
-    [HttpGet("owner/{ownerId:guid}")]
+    [HttpGet("{ownerId:guid}/owner")] //Fixed
     public async Task<IActionResult> GetByOwnerId(Guid ownerId)
     {
         try
@@ -63,7 +64,7 @@ public class NoteController : ControllerBase
         }
     }
 
-    [HttpGet("folder/{folderId:guid}")]
+    [HttpGet("{folderId:guid}/folder")] //Fixed
     public async Task<IActionResult> GetByFolderId(Guid folderId)
     {
         try
@@ -155,7 +156,7 @@ public class NoteController : ControllerBase
         }
     }
 
-    [HttpDelete("owner/{ownerId:guid}")]
+    [HttpDelete("{ownerId:guid}/owner")] //Fixed
     public async Task<IActionResult> DeleteByOwnerId(Guid ownerId)
     {
         try
@@ -175,7 +176,7 @@ public class NoteController : ControllerBase
         }
     }
 
-    [HttpDelete("folder/{folderId:guid}")]
+    [HttpDelete("{folderId:guid}/fodler")] //Fixed
     public async Task<IActionResult> DeleteByFolderId(Guid folderId)
     {
         try
@@ -192,6 +193,76 @@ public class NoteController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("{id:guid}/favorite")]
+    public async Task<IActionResult> ToggleFavorite(Guid id) //Добавить метод в INoteService
+    {
+        try
+        {
+            bool status = await _noteService.enableToFavoriteAsync(id);
+
+            if (!status)
+            {
+                return NotFound("Заметка не найдена");
+            }
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
+        }
+        
+    }
+
+    [HttpPost("{id:guid}/archive")]
+    public async Task<IActionResult> Archive(Guid id)
+    {
+        try
+        {
+            bool archive = await _noteService.enableToArchiveAsync(id);
+
+            if (!archive)
+            {
+                return NotFound("Заметка не найдена");
+            }
+            return NoContent(); //Перезагрузка страницы (настроим потом)
+        }
+        catch (ArgumentException ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
+        }
+    }
+
+    [HttpPost("{id:guid}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
+    {
+        try
+        {
+            bool archive = await _noteService.disableToArchiveAsync(id);
+
+            if (!archive)
+            {
+                return NotFound("Заметка не найдена");
+            }
+            return NoContent(); //Перезагрузка страницы (настроим потом)
+        }
+        catch (ArgumentException ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message); //Ошибка Сервера.
         }
     }
 }

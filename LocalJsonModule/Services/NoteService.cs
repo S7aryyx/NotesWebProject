@@ -188,4 +188,71 @@ public class NoteService : INoteService
         await _repository.DeleteByFolderIdAsync(folderId);
         return true;
     }
+
+    public async Task<bool> enableToFavoriteAsync(Guid Note_id)
+    {
+        Note? note = await _repository.GetByIdAsync(Note_id);
+
+        if (note == null)
+        {
+            return false;
+        }
+
+        note.IsFavorite = !note.IsFavorite;
+        note.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(note);
+        return true;
+    }
+
+    public async Task<bool> enableToArchiveAsync(Guid note_id)
+    //Архивация проекта (переносится при удалении , буферное время хранения , до невозврата - 7 дней)
+    {
+        Note? note = await _repository.GetByIdAsync(note_id);
+
+        if (note == null)
+        {
+            return false;
+        }
+
+        note.IsArchive = true;
+        note.UpdatedAt = DateTime.UtcNow;
+        note.Timer = DateTime.UtcNow.AddDays(7);
+
+        await _repository.UpdateAsync(note);
+        return true;
+    }
+
+    public async Task<bool> disableToArchiveAsync(Guid note_id)
+    {
+        Note? note = await _repository.GetByIdAsync(note_id);
+
+        if (note == null)
+        {
+            return false;
+        }
+
+        note.IsArchive = false;
+        note.UpdatedAt = DateTime.UtcNow;
+        note.Timer = null;
+
+        await _repository.UpdateAsync(note);
+        return true;
+    }
+
+    public async Task<int> DeleteArchiveNotesAsync()
+    {
+        List<Note> notes = await GetAllAsync();
+        DateTime now = DateTime.UtcNow;
+
+        List<Note> notes_timer_expired = notes.Where(n => n.IsArchive && n.Timer.HasValue && n.Timer.Value >= now).ToList();
+
+        foreach (Note note in notes_timer_expired)
+        {
+            await DeleteAsync(note.Id);
+        }
+
+        return notes_timer_expired.Count;
+    }
+
 }

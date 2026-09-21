@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LocalWebModule.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/folders")]
 public class FolderController : ControllerBase
 {
     private readonly IFolderService _folderService;
@@ -49,7 +49,7 @@ public class FolderController : ControllerBase
         }
     }
 
-    [HttpGet("owner/{ownerId:guid}")]
+    [HttpGet("{ownerId:guid}/folder")] //Fixed
     public async Task<IActionResult> GetByOwnerId(Guid ownerId)
     {
         try
@@ -63,7 +63,7 @@ public class FolderController : ControllerBase
         }
     }
 
-    [HttpGet("owner/{ownerId:guid}/parent/{parentFolderId:guid}")]
+    [HttpGet("{ownerId:guid}/parent/{parentFolderId:guid}/owner")] //Fixed
     public async Task<IActionResult> GetByParentFolderId(Guid ownerId, Guid parentFolderId)
     {
         try
@@ -77,7 +77,7 @@ public class FolderController : ControllerBase
         }
     }
 
-    [HttpGet("owner/{ownerId:guid}/root")]
+    [HttpGet("{ownerId:guid}/owner/root")] //Fixer
     public async Task<IActionResult> GetRootFolders(Guid ownerId)
     {
         try
@@ -173,7 +173,7 @@ public class FolderController : ControllerBase
         }
     }
 
-    [HttpDelete("owner/{ownerId:guid}")]
+    [HttpDelete("{ownerId:guid}/delete_all")] //Fixed
     public async Task<IActionResult> DeleteByOwnerId(Guid ownerId)
     {
         try

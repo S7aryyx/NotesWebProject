@@ -14,7 +14,7 @@ public class UserJsonRepository : IUserRepository
         _dataPathProvider = dataPathProvider;
     }
 
-    public async Task<List<UserResponse>> GetAllAsync()
+    public async Task<List<User>> GetAllAsync()
     {
         try
         {
@@ -22,17 +22,17 @@ public class UserJsonRepository : IUserRepository
 
             if (!File.Exists(filePath))
             {
-                return new List<UserResponse>();
+                return new List<User>();
             }
 
             string json = await File.ReadAllTextAsync(filePath);
 
             if (string.IsNullOrWhiteSpace(json))
             {
-                return new List<UserResponse>();
+                return new List<User>();
             }
 
-            return JsonSerializer.Deserialize<List<UserResponse>>(json) ?? new List<UserResponse>();
+            return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
         }
         catch (JsonException ex)
         {
@@ -44,15 +44,15 @@ public class UserJsonRepository : IUserRepository
         }
     } //Теперь возвращает UserRespose
 
-    public async Task<UserResponse?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
-        List<UserResponse> users = await GetAllAsync();
+        List<User> users = await GetAllAsync();
         return users.FirstOrDefault(u => u.Id == id);
     }
 
-    public async Task<UserResponse?> GetByLoginAsync(string login)
+    public async Task<User?> GetByLoginAsync(string login)
     {
-        List<UserResponse> users = await GetAllAsync();
+        List<User> users = await GetAllAsync();
         return users.FirstOrDefault(u => u.Login == login);
     }
 

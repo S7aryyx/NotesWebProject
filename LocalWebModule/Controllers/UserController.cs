@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LocalWebModule.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class UserController : ControllerBase
 {
     private readonly IRegisterService _registerService;
@@ -59,7 +59,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("login/{login}")]
+    [HttpGet("{login}")]
     public async Task<IActionResult> GetByLogin(string login)
     {
         try
@@ -107,7 +107,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("register")] //Fixed
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         try
@@ -129,7 +129,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("auth")]
+    [HttpPost("login")] //Fixed
     public async Task<IActionResult> Auth([FromBody] LoginRequest request)
     {
         try

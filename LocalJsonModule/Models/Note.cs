@@ -11,5 +11,6 @@ public class Note
     public DateTime UpdatedAt { get; set; }
     public bool IsFavorite { get; set; }
     public bool IsArchive { get; set; }
-    public string? NoteType { get; set; }
+    public DateTime? Timer { get; set; } //Таймер до удаления
+    public string? NoteType { get; set; } 
 }

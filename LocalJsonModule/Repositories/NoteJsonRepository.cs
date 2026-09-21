@@ -85,7 +85,7 @@ public class NoteJsonRepository : INoteRepository
         noteToUpdate.IsFavorite = note.IsFavorite;
         noteToUpdate.IsArchive = note.IsArchive;
         noteToUpdate.NoteType = note.NoteType;
-
+        noteToUpdate.Timer = note.Timer; //Добавили таймер
         await SaveAllAsync(notes);
     }
 
