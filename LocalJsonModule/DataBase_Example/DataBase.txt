@@ -1,0 +1,54 @@
+CREATE TABLE "public"."Users"
+(
+    id uuid PRIMARY KEY ,
+    login VARCHAR(255) NOT NULL UNIQUE ,
+    email VARCHAR(255) NOT NULL UNIQUE ,
+    password_hash TEXT NOT NULL ,
+    created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE "public"."Folders"
+(
+    id uuid primary key ,
+    title VARCHAR(255) NOT NULL ,
+    parent_folder_id uuid NULL ,
+    owner_id uuid NOT NULL ,
+    created_at TIMESTAMP NOT NULL,
+
+    CONSTRAINT fk_folders_owner
+    FOREIGN KEY (owner_id) REFERENCES "Users"(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_folders_parent
+    FOREIGN KEY (parent_folder_id) REFERENCES "Folders"(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE "public"."Notes"
+(
+    id uuid primary key ,
+    title VARCHAR(255) NOT NULL ,
+    content TEXT NOT NULL ,
+    owner_id uuid NOT NULL ,
+    folder_id uuid NULL ,
+
+    created_at TIMESTAMP NOT NULL ,
+    updated_at TIMESTAMP NOT NULL ,
+
+    is_favorite BOOLEAN NOT NULL DEFAULT false,
+    is_archive BOOLEAN NOT NULL DEFAULT false,
+
+    timer TIMESTAMP NULL ,
+    note_type VARCHAR(50) NULL,
+
+    CONSTRAINT fk_notes_owner
+    FOREIGN KEY (owner_id) REFERENCES "Users"(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_notes_folder
+    FOREIGN KEY (folder_id) REFERENCES "Folders"(id)
+    
+    --ON DELETE CASCADE (При удалении ПАПКИ , заметки тоже удаляются)
+    --ON DELETE SET NULL (При удалении ПАПКИ , заметки остаются)
+    --Что-то одно из этого надо выбрать.
+)

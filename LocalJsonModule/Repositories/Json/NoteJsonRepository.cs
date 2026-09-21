@@ -2,7 +2,7 @@ using System.Text.Json;
 using LocalJsonModule.Data;
 using LocalJsonModule.Models;
 
-namespace LocalJsonModule.Repositories;
+namespace LocalJsonModule.Repositories.Json;
 
 public class NoteJsonRepository : INoteRepository
 {

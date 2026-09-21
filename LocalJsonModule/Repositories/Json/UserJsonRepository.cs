@@ -3,7 +3,7 @@ using LocalJsonModule.Data;
 using LocalJsonModule.DTOs.Users;
 using LocalJsonModule.Models;
 
-namespace LocalJsonModule.Repositories;
+namespace LocalJsonModule.Repositories.Json;
 
 public class UserJsonRepository : IUserRepository
 {

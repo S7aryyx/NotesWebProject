@@ -6,6 +6,7 @@ using LocalJsonModule.Services.Register;
 using LocalJsonModule.Services.Update;
 using Microsoft.AspNetCore.Identity;
 using LocalJsonModule.Models;
+using LocalJsonModule.Repositories.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
