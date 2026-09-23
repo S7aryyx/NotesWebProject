@@ -201,7 +201,7 @@ public class NoteController : ControllerBase
     {
         try
         {
-            bool status = await _noteService.enableToFavoriteAsync(id);
+            bool status = await _noteService.ToggleToFavoriteAsync(id);
 
             if (!status)
             {
@@ -225,7 +225,7 @@ public class NoteController : ControllerBase
     {
         try
         {
-            bool archive = await _noteService.enableToArchiveAsync(id);
+            bool archive = await _noteService.ArchiveAsync(id);
 
             if (!archive)
             {
@@ -248,7 +248,7 @@ public class NoteController : ControllerBase
     {
         try
         {
-            bool archive = await _noteService.disableToArchiveAsync(id);
+            bool archive = await _noteService.UnarchiveAsync(id);
 
             if (!archive)
             {

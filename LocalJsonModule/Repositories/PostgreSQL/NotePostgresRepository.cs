@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace LocalJsonModule.Repositories.PostgreSQL
 {
-    public class NotePostgresRepository : INoteRepository
-    {
+    //public class NotePostgresRepository : INoteRepository
+    //{
 
-    }
+    //}
 }

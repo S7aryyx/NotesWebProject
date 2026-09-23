@@ -7,6 +7,7 @@ using LocalJsonModule.Services.Update;
 using Microsoft.AspNetCore.Identity;
 using LocalJsonModule.Models;
 using LocalJsonModule.Repositories.Json;
+using NotesWebProject.Repositories.PostgreSQL;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,13 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<INoteService, NoteService>();
+
+//new
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddScoped<IConnectionFactory>(db_factory => new DbConnectionFactory(connectionString!));
+//builder.Services.AddScoped<IUserRepository, UserPostgresRepository>();
+//new
 
 var app = builder.Build();
 

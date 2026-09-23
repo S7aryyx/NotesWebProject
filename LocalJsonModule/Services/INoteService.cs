@@ -14,9 +14,9 @@ public interface INoteService
     Task<bool> DeleteAsync(Guid id);
     Task<bool> DeleteByOwnerIdAsync(Guid ownerId);
     Task<bool> DeleteByFolderIdAsync(Guid folderId);
-    Task<bool> enableToFavoriteAsync(Guid Note_id);
-    Task<bool> enableToArchiveAsync(Guid note_id);
-    Task<bool> disableToArchiveAsync(Guid note_id);
+    Task<bool> ToggleToFavoriteAsync(Guid Note_id);
+    Task<bool> ArchiveAsync(Guid note_id);
+    Task<bool> UnarchiveAsync(Guid note_id);
     Task<int> DeleteArchiveNotesAsync();
 
 }
