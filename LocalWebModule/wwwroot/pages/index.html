@@ -1,23 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Notes [UserName]</title>
-    <script src="js/user.js"></script>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>NOTES</title>
+
+    <link rel="stylesheet"
+          href="/css/styles.css">
+
 </head>
 
 <body>
-    <div class="mainPage">
+
+    <div class="app">
+
+        <!-- SIDEBAR -->
+
         <aside class="sidebar">
-            <div class="logo">NOTES</div>
+
+            <div class="sidebar-header">
+
+                <div class="logo">
+                    NOTES
+                </div>
+
+                <button id="createNoteButton"
+                        class="new-note-button">
+                    + Новая заметка
+                </button>
+
+            </div>
+
+
+            <div class="sidebar-section">
+
+                <div class="sidebar-title">
+                    ПАПКИ
+                </div>
+
+                <div id="folderList">
+
+                    <div class="empty-sidebar">
+                        Папок пока нет
+                    </div>
+
+                </div>
+
+                <button id="createFolderButton"
+                        class="secondary-button">
+                    + Новая папка
+                </button>
+
+            </div>
+
+
+            <div class="sidebar-section">
+
+                <button id="allNotesButton"
+                        class="sidebar-button active">
+                    Все заметки
+                </button>
+
+                <button id="favoriteButton"
+                        class="sidebar-button">
+                    Избранное
+                </button>
+
+                <button id="archiveButton"
+                        class="sidebar-button">
+                    Архив
+                </button>
+
+            </div>
+
+
+            <div class="sidebar-bottom">
+
+                <div id="currentUser"
+                     class="current-user">
+                    Пользователь
+                </div>
+
+                <button onclick="logout()"
+                        class="logout-button">
+                    Выйти
+                </button>
+
+            </div>
+
         </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+
+                    <h1 id="pageTitle">
+                        Все заметки
+                    </h1>
+
+                    <p id="noteCount">
+                        0 заметок
+                    </p>
+
+                </div>
+
+
+                <input type="text"
+                       id="searchInput"
+                       class="search-input"
+                       placeholder="Поиск...">
+
+            </header>
+
+
+            <section id="notesContainer"
+                     class="notes-container">
+            </section>
+
+
+            <!-- EDITOR -->
+
+            <section id="editor"
+                     class="editor hidden">
+
+                <input type="text"
+                       id="noteTitle"
+                       class="editor-title"
+                       placeholder="Название заметки">
+
+                <textarea id="noteContent"
+                          class="editor-content"
+                          placeholder="Начните писать..."></textarea>
+
+
+                <div class="editor-footer">
+
+                    <select id="noteFolder">
+
+                        <option value="">
+                            Без папки
+                        </option>
+
+                    </select>
+
+
+                    <select id="noteType">
+
+                        <option value="">
+                            Тип заметки
+                        </option>
+
+                        <option value="text">
+                            Текст
+                        </option>
+
+                        <option value="task">
+                            Задача
+                        </option>
+
+                        <option value="idea">
+                            Идея
+                        </option>
+
+                    </select>
+
+
+                    <button id="saveNoteButton"
+                            class="primary-button">
+                        Сохранить
+                    </button>
+
+                    <button id="cancelNoteButton"
+                            class="secondary-button">
+                        Отмена
+                    </button>
+
+                </div>
+
+            </section>
+
+        </main>
+
     </div>
 
-    <input type="text" id="LoginInput" />
-    <input type="email" id="EmailInput" />
-    <input type="password" id="PasswordInput" />
-    <button id="RegisterClick">Создать пользователя</button>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/notes.js"></script>
 
 </body>
+
 </html>

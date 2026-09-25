@@ -13,10 +13,9 @@ namespace NotesWebProject.Repositories.PostgreSQL
         {
             _connectionFactory = connectionFactory;
         }
-        //Сделать защиту от ИНЪЕКЦИЙ в бд.
         public async Task<List<User>> GetAllAsync()
         {
-            const string sql = "SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users';";
+            const string sql = """SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users';""";
             var users = new List<User>();
 
             await using var connection = _connectionFactory.CreateConnection();
@@ -35,7 +34,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task<User?> GetByIdAsync(Guid id)
         {
-            const string sql = "SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE id = @id;";
+            const string sql = """SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE id = @id;""";
 
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -55,7 +54,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task<User?> GetByLoginAsync(string login)
         {
-            const string sql = "SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE login = @login;";
+            const string sql ="""SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE login = @login;""";
 
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -75,7 +74,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task<User?> GetByEmailAsync(string email)
         {
-            const string sql = "SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE email = @email;";
+            const string sql = """SELECT id,login,email,password_hash,created_at FROM 'Ilgam'.'Users' WHERE email = @email;""";
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
@@ -94,7 +93,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task AddAsync(User user)
         {
-            const string sql = "INSERT INTO 'Ilgam'.'Users'(id,login,email,password_hash,created_at) VALUES (@id,@login,@email,@password_hash,@created_at);";
+            const string sql = """INSERT INTO 'Ilgam'.'Users'(id,login,email,password_hash,created_at) VALUES (@id,@login,@email,@password_hash,@created_at);""";
 
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -111,7 +110,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task UpdateAsync(User user)
         {
-            const string sql = "UPDATE 'Ilgam'.'Users' SET login = @login, email = @email,password_hash = @password_hash WHERE id = @id;";
+            const string sql = """UPDATE 'Ilgam'.'Users' SET login = @login, email = @email,password_hash = @password_hash WHERE id = @id;""";
 
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -127,7 +126,7 @@ namespace NotesWebProject.Repositories.PostgreSQL
         }
         public async Task DeleteAsync(Guid id)
         {
-            const string sql = "DELETE FROM 'Ilgam'.'Users' WHERE id = @id;";
+            const string sql = """DELETE FROM 'Ilgam'.'Users' WHERE id = @id;""";
 
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();

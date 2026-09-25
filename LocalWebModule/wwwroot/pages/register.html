@@ -1,36 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width
-              , initial-scale=1.0">
-    <title>Register Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOTES — Регистрация</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
-
 <body>
-    <div class="reg-container">
-        <div class="reg-card">
-            <div class="logo">
-                NOTES
-            </div>
-
-            <h2>Добро пожаловать!</h2>
-
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Введите почту">
-
-            <label for="tel">Phone number:</label>
-            <input type="tel" id="tel" name="tel" placeholder="Введите ном.телефона.">
-
-            <label for="login">Login:</label>
-            <input type="text" id="login" name="login" placeholder="Введите логин">
-
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="пароль">
-
-            <button type="button">Войти</button>
-
-        </div>
-    </div>
+    <main class="auth-page"> <section class="auth-card"> <div class="logo"> NOTES </div> <h1>Создать аккаунт</h1> <p class="auth-description"> Создайте аккаунт, чтобы начать работать с заметками. </p> <form id="registerForm"> <label for="email"> Email </label> <input type="email" id="email" placeholder="example@mail.com" required> <label for="login"> Логин </label> <input type="text" id="login" placeholder="Введите логин" required> <label for="password"> Пароль </label> <input type="password" id="password" placeholder="Введите пароль" required> <button type="submit" class="primary-button"> Зарегистрироваться </button> </form> <p id="registerMessage" class="message"></p> <div class="auth-footer"> Уже есть аккаунт? <a href="/pages/login.html"> Войти </a> </div> </section> </main>
+    <script src="/js/auth.js"></script>
 </body>
 </html>
