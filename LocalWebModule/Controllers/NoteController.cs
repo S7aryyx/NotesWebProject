@@ -176,7 +176,7 @@ public class NoteController : ControllerBase
         }
     }
 
-    [HttpDelete("{folderId:guid}/fodler")] //Fixed
+    [HttpDelete("{folderId:guid}/folder")] //Fixed
     public async Task<IActionResult> DeleteByFolderId(Guid folderId)
     {
         try

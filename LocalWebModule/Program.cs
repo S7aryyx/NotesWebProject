@@ -21,9 +21,9 @@ builder.Services.AddSingleton<IDataPathProvider, DataPathProvider>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUpdateService, UpdateService>();
-builder.Services.AddScoped<IUserRepository, UserJsonRepository>();
-builder.Services.AddScoped<IFolderRepository, FolderJsonRepository>();
-builder.Services.AddScoped<INoteRepository, NoteJsonRepository>();
+//builder.Services.AddScoped<IUserRepository, UserJsonRepository>();
+//builder.Services.AddScoped<IFolderRepository, FolderJsonRepository>();
+//builder.Services.AddScoped<INoteRepository, NoteJsonRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -48,7 +48,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapControllers();
 
