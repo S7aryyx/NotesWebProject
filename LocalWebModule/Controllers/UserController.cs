@@ -83,7 +83,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("email/{email}")]
+    [HttpGet("{email}")]
     public async Task<IActionResult> GetByEmail(string email)
     {
         try
