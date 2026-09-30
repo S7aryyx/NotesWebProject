@@ -18,4 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\LocalJsonModule\LocalJsonModule.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
 </Project>
