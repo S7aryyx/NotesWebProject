@@ -21,24 +21,26 @@ builder.Services.AddSingleton<IDataPathProvider, DataPathProvider>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUpdateService, UpdateService>();
+
+//Json API's
+//
 //builder.Services.AddScoped<IUserRepository, UserJsonRepository>();
 //builder.Services.AddScoped<IFolderRepository, FolderJsonRepository>();
 //builder.Services.AddScoped<INoteRepository, NoteJsonRepository>();
+//
+
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 
-
-//new
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddScoped<IConnectionFactory>(db_factory => new DbConnectionFactory(connectionString!));
 builder.Services.AddScoped<IUserRepository, UserPostgresRepository>();
 builder.Services.AddScoped<INoteRepository, NotePostgresRepository>();
 builder.Services.AddScoped<IFolderRepository, FolderPostgresRepository>();
-//new
 
 var app = builder.Build();
 
@@ -48,7 +50,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapControllers();
 
