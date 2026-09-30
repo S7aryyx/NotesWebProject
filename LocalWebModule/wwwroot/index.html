@@ -1,5 +1,34 @@
 ﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>API Test Page</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
 
 
+    <h1>Страница для тестов API(js).</h1>
 
+    <section class="api_section">
+        <h2>API : Login()</h2>
+        <p class="route">POST /api/auth/login</p>
+        <input type="text" id="login_login" placeholder="login">
+        <input type="text" id="login_password" placeholder="password">
+        <button id="login_button" onclick="run_Login()">Отправить запрос</button>
+        <p id="login_result" class="result"></p>
+    </section>
+
+    <section class="api_section">
+        <p class="route">POST /api/auth/register</p>
+        <input type="text" id="register_email" placeholder="email">
+        <input type="text" id="register_login" placeholder="login">
+        <input type="text" id="register_password" placeholder="password">
+        <button id="register_button" onclick="run_Register()">Отправить запрос</button>
+        <p id="register_result" class="result"></p>
+
+    </section>
+
+</body>
 </html>
