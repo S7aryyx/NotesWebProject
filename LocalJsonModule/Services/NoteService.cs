@@ -189,7 +189,7 @@ public class NoteService : INoteService
         return true;
     }
 
-    public async Task<bool> enableToFavoriteAsync(Guid Note_id)
+    public async Task<bool> ToggleToFavoriteAsync(Guid Note_id)
     {
         Note? note = await _repository.GetByIdAsync(Note_id);
 
@@ -205,7 +205,7 @@ public class NoteService : INoteService
         return true;
     }
 
-    public async Task<bool> enableToArchiveAsync(Guid note_id)
+    public async Task<bool> ArchiveAsync(Guid note_id)
     //Архивация проекта (переносится при удалении , буферное время хранения , до невозврата - 7 дней)
     {
         Note? note = await _repository.GetByIdAsync(note_id);
@@ -223,7 +223,7 @@ public class NoteService : INoteService
         return true;
     }
 
-    public async Task<bool> disableToArchiveAsync(Guid note_id)
+    public async Task<bool> UnarchiveAsync(Guid note_id)
     {
         Note? note = await _repository.GetByIdAsync(note_id);
 
@@ -245,7 +245,8 @@ public class NoteService : INoteService
         List<Note> notes = await GetAllAsync();
         DateTime now = DateTime.UtcNow;
 
-        List<Note> notes_timer_expired = notes.Where(n => n.IsArchive && n.Timer.HasValue && n.Timer.Value >= now).ToList();
+        List<Note> notes_timer_expired =
+            notes.Where(n => n.IsArchive && n.Timer.HasValue && n.Timer.Value <= now).ToList();
 
         foreach (Note note in notes_timer_expired)
         {

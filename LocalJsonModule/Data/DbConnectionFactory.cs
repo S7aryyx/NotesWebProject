@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 
 namespace LocalJsonModule.Data
 {
-    public class DbConnectionFactory
+    public class DbConnectionFactory : IConnectionFactory
     {
         private readonly string _connectionString;
 
-        public DbConnectionFactory(string connString)
+        public DbConnectionFactory(string connectionString)
         {
-            _connectionString = connString;
+            _connectionString = connectionString;
         }
+
         public NpgsqlConnection CreateConnection()
         {
             return new NpgsqlConnection(_connectionString);
