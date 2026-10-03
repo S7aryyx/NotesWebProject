@@ -22,7 +22,7 @@ public class FolderPostgresRepository : IFolderRepository
                 parent_folder_id,
                 owner_id,
                 created_at
-            FROM "ilgam"."Folders";
+            FROM "Ilgam"."Folders";
             """;
 
         List<Folder> folders = new List<Folder>();
@@ -50,7 +50,7 @@ public class FolderPostgresRepository : IFolderRepository
                 parent_folder_id,
                 owner_id,
                 created_at
-            FROM "ilgam"."Folders"
+            FROM "Ilgam"."Folders"
             WHERE id = @id;
             """;
 
@@ -80,7 +80,7 @@ public class FolderPostgresRepository : IFolderRepository
                 parent_folder_id,
                 owner_id,
                 created_at
-            FROM "ilgam"."Folders"
+            FROM "Ilgam"."Folders"
             WHERE owner_id = @owner_id
             ORDER BY created_at;
             """;
@@ -113,7 +113,7 @@ public class FolderPostgresRepository : IFolderRepository
                 parent_folder_id,
                 owner_id,
                 created_at
-            FROM "ilgam"."Folders"
+            FROM "Ilgam"."Folders"
             WHERE owner_id = @owner_id
               AND parent_folder_id IS NOT DISTINCT FROM @parent_folder_id
             ORDER BY created_at;
@@ -143,7 +143,7 @@ public class FolderPostgresRepository : IFolderRepository
     public async Task AddAsync(Folder folder)
     {
         const string sql = """
-            INSERT INTO "ilgam"."Folders"
+            INSERT INTO "Ilgam"."Folders"
             (
                 id,
                 title,
@@ -178,7 +178,7 @@ public class FolderPostgresRepository : IFolderRepository
     public async Task UpdateAsync(Folder folder)
     {
         const string sql = """
-            UPDATE "ilgam"."Folders"
+            UPDATE "Ilgam"."Folders"
             SET
                 title = @title,
                 parent_folder_id = @parent_folder_id
@@ -204,7 +204,7 @@ public class FolderPostgresRepository : IFolderRepository
     public async Task DeleteAsync(Guid id)
     {
         const string sql = """
-            DELETE FROM "ilgam"."Folders"
+            DELETE FROM "Ilgam"."Folders"
             WHERE id = @id;
             """;
 
@@ -221,7 +221,7 @@ public class FolderPostgresRepository : IFolderRepository
     public async Task DeleteByOwnerIdAsync(Guid ownerId)
     {
         const string sql = """
-            DELETE FROM "ilgam"."Folders"
+            DELETE FROM "Ilgam"."Folders"
             WHERE owner_id = @owner_id;
             """;
 
