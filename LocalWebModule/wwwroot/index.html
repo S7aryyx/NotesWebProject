@@ -1,34 +1,839 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <title>API Test Page</title>
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Notes Web API Tester</title>
+
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body>
 
+    <div class="container">
 
-    <h1>Страница для тестов API(js).</h1>
+        <h1>Notes Web API</h1>
 
-    <section class="api_section">
-        <h2>API : Login()</h2>
-        <p class="route">POST /api/auth/login</p>
-        <input type="text" id="login_login" placeholder="login">
-        <input type="text" id="login_password" placeholder="password">
-        <button id="login_button" onclick="run_Login()">Отправить запрос</button>
-        <p id="login_result" class="result"></p>
-    </section>
+        <p class="description">
+            Страница для проверки всех методов User, Folder и Note Controller.
+        </p>
 
-    <section class="api_section">
-        <p class="route">POST /api/auth/register</p>
-        <input type="text" id="register_email" placeholder="email">
-        <input type="text" id="register_login" placeholder="login">
-        <input type="text" id="register_password" placeholder="password">
-        <button id="register_button" onclick="run_Register()">Отправить запрос</button>
-        <p id="register_result" class="result"></p>
 
-    </section>
+        <!-- ================================================= -->
+        <!-- USERS -->
+        <!-- ================================================= -->
+
+        <h2>Users / Auth</h2>
+
+
+        <!-- LOGIN -->
+
+        <section class="api-section">
+
+            <h3>Login</h3>
+
+            <p class="route">
+                POST /api/auth/login
+            </p>
+
+            <input id="login_login"
+                   type="text"
+                   placeholder="Login">
+
+            <input id="login_password"
+                   type="password"
+                   placeholder="Password">
+
+            <button onclick="run_Login()">
+                Вызвать API
+            </button>
+
+            <pre id="login_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- REGISTER -->
+
+        <section class="api-section">
+
+            <h3>Register</h3>
+
+            <p class="route">
+                POST /api/auth/register
+            </p>
+
+            <input id="register_email"
+                   type="email"
+                   placeholder="Email">
+
+            <input id="register_login"
+                   type="text"
+                   placeholder="Login">
+
+            <input id="register_password"
+                   type="password"
+                   placeholder="Password">
+
+            <button onclick="run_Register()">
+                Вызвать API
+            </button>
+
+            <pre id="register_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET ALL USERS -->
+
+        <section class="api-section">
+
+            <h3>Get all users</h3>
+
+            <p class="route">
+                GET /api/auth
+            </p>
+
+            <button onclick="run_GetAllUsers()">
+                Вызвать API
+            </button>
+
+            <pre id="get_all_users_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET USER BY ID -->
+
+        <section class="api-section">
+
+            <h3>Get user by ID</h3>
+
+            <p class="route">
+                GET /api/auth/{id}
+            </p>
+
+            <input id="user_id"
+                   type="text"
+                   placeholder="User UUID">
+
+            <button onclick="run_GetUserById()">
+                Вызвать API
+            </button>
+
+            <pre id="get_user_by_id_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET USER BY LOGIN -->
+
+        <section class="api-section">
+
+            <h3>Get user by login</h3>
+
+            <p class="route">
+                GET /api/auth/{login}
+            </p>
+
+            <input id="user_login"
+                   type="text"
+                   placeholder="Login">
+
+            <button onclick="run_GetUserByLogin()">
+                Вызвать API
+            </button>
+
+            <pre id="get_user_by_login_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET USER BY EMAIL -->
+
+        <section class="api-section">
+
+            <h3>Get user by email</h3>
+
+            <p class="route">
+                GET /api/auth/email/{email}
+            </p>
+
+            <input id="user_email"
+                   type="email"
+                   placeholder="Email">
+
+            <button onclick="run_GetUserByEmail()">
+                Вызвать API
+            </button>
+
+            <pre id="get_user_by_email_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- UPDATE USER -->
+
+        <section class="api-section">
+
+            <h3>Update user</h3>
+
+            <p class="route">
+                PUT /api/auth/{id}
+            </p>
+
+            <input id="update_user_id"
+                   type="text"
+                   placeholder="User UUID">
+
+            <input id="update_user_email"
+                   type="email"
+                   placeholder="New email">
+
+            <input id="update_user_login"
+                   type="text"
+                   placeholder="New login">
+
+            <input id="update_user_password"
+                   type="password"
+                   placeholder="New password">
+
+            <button onclick="run_UpdateUser()">
+                Вызвать API
+            </button>
+
+            <pre id="update_user_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE USER -->
+
+        <section class="api-section">
+
+            <h3>Delete user</h3>
+
+            <p class="route">
+                DELETE /api/auth/{id}
+            </p>
+
+            <input id="delete_user_id"
+                   type="text"
+                   placeholder="User UUID">
+
+            <button onclick="run_DeleteUser()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_user_result"
+                 class="result"></pre>
+
+        </section>
+
+
+
+        <!-- ================================================= -->
+        <!-- FOLDERS -->
+        <!-- ================================================= -->
+
+        <h2>Folders</h2>
+
+
+        <!-- GET ALL FOLDERS -->
+
+        <section class="api-section">
+
+            <h3>Get all folders</h3>
+
+            <p class="route">
+                GET /api/folders
+            </p>
+
+            <button onclick="run_GetAllFolders()">
+                Вызвать API
+            </button>
+
+            <pre id="get_all_folders_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET FOLDER BY ID -->
+
+        <section class="api-section">
+
+            <h3>Get folder by ID</h3>
+
+            <p class="route">
+                GET /api/folders/{id}
+            </p>
+
+            <input id="folder_id"
+                   type="text"
+                   placeholder="Folder UUID">
+
+            <button onclick="run_GetFolderById()">
+                Вызвать API
+            </button>
+
+            <pre id="get_folder_by_id_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET FOLDERS BY OWNER -->
+
+        <section class="api-section">
+
+            <h3>Get folders by owner</h3>
+
+            <p class="route">
+                GET /api/folders/{ownerId}/folder
+            </p>
+
+            <input id="folders_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <button onclick="run_GetFoldersByOwner()">
+                Вызвать API
+            </button>
+
+            <pre id="get_folders_by_owner_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET CHILD FOLDERS -->
+
+        <section class="api-section">
+
+            <h3>Get child folders</h3>
+
+            <p class="route">
+                GET /api/folders/{ownerId}/parent/{parentFolderId}/owner
+            </p>
+
+            <input id="child_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <input id="parent_folder_id"
+                   type="text"
+                   placeholder="Parent folder UUID">
+
+            <button onclick="run_GetChildFolders()">
+                Вызвать API
+            </button>
+
+            <pre id="get_child_folders_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET ROOT FOLDERS -->
+
+        <section class="api-section">
+
+            <h3>Get root folders</h3>
+
+            <p class="route">
+                GET /api/folders/{ownerId}/owner/root
+            </p>
+
+            <input id="root_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <button onclick="run_GetRootFolders()">
+                Вызвать API
+            </button>
+
+            <pre id="get_root_folders_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- CREATE FOLDER -->
+
+        <section class="api-section">
+
+            <h3>Create folder</h3>
+
+            <p class="route">
+                POST /api/folders
+            </p>
+
+            <input id="create_folder_title"
+                   type="text"
+                   placeholder="Folder title">
+
+            <input id="create_folder_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <input id="create_folder_parent_id"
+                   type="text"
+                   placeholder="Parent folder UUID (необязательно)">
+
+            <button onclick="run_CreateFolder()">
+                Вызвать API
+            </button>
+
+            <pre id="create_folder_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- UPDATE FOLDER -->
+
+        <section class="api-section">
+
+            <h3>Update folder</h3>
+
+            <p class="route">
+                PUT /api/folders/{id}
+            </p>
+
+            <input id="update_folder_id"
+                   type="text"
+                   placeholder="Folder UUID">
+
+            <input id="update_folder_title"
+                   type="text"
+                   placeholder="New title">
+
+            <input id="update_folder_parent_id"
+                   type="text"
+                   placeholder="Parent folder UUID (необязательно)">
+
+            <button onclick="run_UpdateFolder()">
+                Вызвать API
+            </button>
+
+            <pre id="update_folder_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE FOLDER -->
+
+        <section class="api-section">
+
+            <h3>Delete folder</h3>
+
+            <p class="route">
+                DELETE /api/folders/{id}
+            </p>
+
+            <input id="delete_folder_id"
+                   type="text"
+                   placeholder="Folder UUID">
+
+            <button onclick="run_DeleteFolder()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_folder_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE FOLDERS BY OWNER -->
+
+        <section class="api-section">
+
+            <h3>Delete folders by owner</h3>
+
+            <p class="route">
+                DELETE /api/folders/{ownerId}/delete_all
+            </p>
+
+            <input id="delete_folders_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <button onclick="run_DeleteFoldersByOwner()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_folders_by_owner_result"
+                 class="result"></pre>
+
+        </section>
+
+
+
+        <!-- ================================================= -->
+        <!-- NOTES -->
+        <!-- ================================================= -->
+
+        <h2>Notes</h2>
+
+
+        <!-- GET ALL NOTES -->
+
+        <section class="api-section">
+
+            <h3>Get all notes</h3>
+
+            <p class="route">
+                GET /api/notes
+            </p>
+
+            <button onclick="run_GetAllNotes()">
+                Вызвать API
+            </button>
+
+            <pre id="get_all_notes_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET NOTE BY ID -->
+
+        <section class="api-section">
+
+            <h3>Get note by ID</h3>
+
+            <p class="route">
+                GET /api/notes/{id}
+            </p>
+
+            <input id="note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <button onclick="run_GetNoteById()">
+                Вызвать API
+            </button>
+
+            <pre id="get_note_by_id_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET NOTES BY OWNER -->
+
+        <section class="api-section">
+
+            <h3>Get notes by owner</h3>
+
+            <p class="route">
+                GET /api/notes/{ownerId}/owner
+            </p>
+
+            <input id="notes_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <button onclick="run_GetNotesByOwner()">
+                Вызвать API
+            </button>
+
+            <pre id="get_notes_by_owner_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- GET NOTES BY FOLDER -->
+
+        <section class="api-section">
+
+            <h3>Get notes by folder</h3>
+
+            <p class="route">
+                GET /api/notes/{folderId}/folder
+            </p>
+
+            <input id="notes_folder_id"
+                   type="text"
+                   placeholder="Folder UUID">
+
+            <button onclick="run_GetNotesByFolder()">
+                Вызвать API
+            </button>
+
+            <pre id="get_notes_by_folder_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- CREATE NOTE -->
+
+        <section class="api-section">
+
+            <h3>Create note</h3>
+
+            <p class="route">
+                POST /api/notes
+            </p>
+
+            <input id="create_note_title"
+                   type="text"
+                   placeholder="Title">
+
+            <textarea id="create_note_content"
+                      placeholder="Content"></textarea>
+
+            <input id="create_note_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <input id="create_note_folder_id"
+                   type="text"
+                   placeholder="Folder UUID (необязательно)">
+
+            <input id="create_note_type"
+                   type="text"
+                   placeholder="Note type (необязательно)">
+
+            <label>
+                <input id="create_note_favorite"
+                       type="checkbox">
+
+                Favorite
+            </label>
+
+            <label>
+                <input id="create_note_archive"
+                       type="checkbox">
+
+                Archive
+            </label>
+
+            <button onclick="run_CreateNote()">
+                Вызвать API
+            </button>
+
+            <pre id="create_note_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- UPDATE NOTE -->
+
+        <section class="api-section">
+
+            <h3>Update note</h3>
+
+            <p class="route">
+                PUT /api/notes/{id}
+            </p>
+
+            <input id="update_note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <input id="update_note_title"
+                   type="text"
+                   placeholder="New title">
+
+            <textarea id="update_note_content"
+                      placeholder="New content"></textarea>
+
+            <input id="update_note_folder_id"
+                   type="text"
+                   placeholder="Folder UUID (необязательно)">
+
+            <input id="update_note_type"
+                   type="text"
+                   placeholder="Note type (необязательно)">
+
+            <label>
+                <input id="update_note_favorite"
+                       type="checkbox">
+
+                Favorite
+            </label>
+
+            <label>
+                <input id="update_note_archive"
+                       type="checkbox">
+
+                Archive
+            </label>
+
+            <button onclick="run_UpdateNote()">
+                Вызвать API
+            </button>
+
+            <pre id="update_note_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE NOTE -->
+
+        <section class="api-section">
+
+            <h3>Delete note</h3>
+
+            <p class="route">
+                DELETE /api/notes/{id}
+            </p>
+
+            <input id="delete_note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <button onclick="run_DeleteNote()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_note_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE NOTES BY OWNER -->
+
+        <section class="api-section">
+
+            <h3>Delete notes by owner</h3>
+
+            <p class="route">
+                DELETE /api/notes/{ownerId}/owner
+            </p>
+
+            <input id="delete_notes_owner_id"
+                   type="text"
+                   placeholder="Owner UUID">
+
+            <button onclick="run_DeleteNotesByOwner()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_notes_by_owner_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- DELETE NOTES BY FOLDER -->
+
+        <section class="api-section">
+
+            <h3>Delete notes by folder</h3>
+
+            <p class="route">
+                DELETE /api/notes/{folderId}/folder
+            </p>
+
+            <input id="delete_notes_folder_id"
+                   type="text"
+                   placeholder="Folder UUID">
+
+            <button onclick="run_DeleteNotesByFolder()">
+                Вызвать API
+            </button>
+
+            <pre id="delete_notes_by_folder_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- TOGGLE FAVORITE -->
+
+        <section class="api-section">
+
+            <h3>Toggle favorite</h3>
+
+            <p class="route">
+                POST /api/notes/{id}/favorite
+            </p>
+
+            <input id="favorite_note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <button onclick="run_ToggleFavorite()">
+                Вызвать API
+            </button>
+
+            <pre id="favorite_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- ARCHIVE -->
+
+        <section class="api-section">
+
+            <h3>Archive note</h3>
+
+            <p class="route">
+                POST /api/notes/{id}/archive
+            </p>
+
+            <input id="archive_note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <button onclick="run_ArchiveNote()">
+                Вызвать API
+            </button>
+
+            <pre id="archive_result"
+                 class="result"></pre>
+
+        </section>
+
+
+        <!-- RESTORE -->
+
+        <section class="api-section">
+
+            <h3>Restore note</h3>
+
+            <p class="route">
+                POST /api/notes/{id}/restore
+            </p>
+
+            <input id="restore_note_id"
+                   type="text"
+                   placeholder="Note UUID">
+
+            <button onclick="run_RestoreNote()">
+                Вызвать API
+            </button>
+
+            <pre id="restore_result"
+                 class="result"></pre>
+
+        </section>
+
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/main.js"></script>
 
 </body>
+
 </html>
