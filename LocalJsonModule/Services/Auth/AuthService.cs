@@ -37,7 +37,7 @@ namespace LocalJsonModule.Services.Auth
             {
                 return null;
             }
-
+            //Отдельную DTO без пароля
             User? user = await _userRepository.GetByLoginAsync(request.Login);
 
             if (user == null)

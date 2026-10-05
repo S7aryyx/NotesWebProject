@@ -12,5 +12,12 @@ namespace LocalJsonModule.DTOs.Users
         public string Email { get; set; }
         public string Login { get; set; }
         public DateTime CreatedAt { get; set; }
+        public UserResponse(Guid guid , string email , string login , DateTime dt)
+        {
+            this.Id = guid;
+            this.Email = email;
+            this.Login = login;
+            this.CreatedAt = dt;
+        }
     }
 }

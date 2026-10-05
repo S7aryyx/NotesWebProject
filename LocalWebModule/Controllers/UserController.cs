@@ -113,7 +113,9 @@ public class UserController : ControllerBase
         try
         {
             User user = await _registerService.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+
+            UserResponse response = new UserResponse(user.Id, user.Email, user.Login, user.CreatedAt);
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, response);
         }
         catch (ArgumentException ex)
         {
@@ -142,12 +144,7 @@ public class UserController : ControllerBase
             }
 
             var response = new UserResponse
-            {
-                Id = user.Id,
-                Login = user.Login,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt
-            };
+            (user.Id, user.Email, user.Login, user.CreatedAt);
 
             return Ok(response);
         }

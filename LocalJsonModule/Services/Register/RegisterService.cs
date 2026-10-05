@@ -64,7 +64,7 @@ namespace LocalJsonModule.Services.Register
                 _passwordHasher.HashPassword(user, request.Password);
 
             await _userRepository.AddAsync(user);
-            return user;
+            return user; //Отдельную DTO без пароля
         }
     }
 }
