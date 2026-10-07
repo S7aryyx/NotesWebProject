@@ -20,7 +20,6 @@ select {
     min-height: 100vh;
 }
 
-/* SIDEBAR */
 .sidebar {
     position: fixed;
     left: 0;
@@ -251,7 +250,6 @@ select {
     color: #9aa0a6;
 }
 
-/* COLLAPSED SIDEBAR */
 .sidebar.collapsed .brand-text,
 .sidebar.collapsed .sidebar-action span,
 .sidebar.collapsed .sidebar-section-title,
@@ -285,7 +283,6 @@ select {
     justify-content: center;
 }
 
-/* MAIN */
 .main-content {
     min-height: 100vh;
     margin-left: 290px;
@@ -414,7 +411,6 @@ select {
     background: #f0f1f3;
 }
 
-/* EDITOR */
 .editor-panel {
     position: relative;
 }
@@ -523,7 +519,6 @@ select {
     border-top: 1px solid #eef0f2;
 }
 
-/* ACCOUNT MODAL */
 .account-modal-avatar {
     width: 70px;
     height: 70px;

@@ -1,0 +1,79 @@
+﻿<Page x:Class="WPF.Windows.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPF.Windows"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="1000"
+      Title="MainPage">
+
+    <Grid Background="Red">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Background="AliceBlue" Padding="15" DockPanel.Dock="Left">
+
+            <StackPanel Name="TreeElement" DockPanel.Dock="Top">
+                <TextBlock Text="Notes_Project" Width="74" Padding="0,5,0,0" Height="22"/>
+                <TreeView x:Name="Tree" Height="156">
+                    <!--Коллекция 1-->
+                    <TreeViewItem Name="Coll_1" Header="Папка_01">
+                        <TreeViewItem Header="Папка_в_папке_1"/>
+                        <TreeViewItem Header="Папка_в_папке_2"/>
+                        <TreeViewItem Header="Папка_в_папке_3"/>
+                    </TreeViewItem>
+                    <!--Коллекция 2-->
+                    <TreeViewItem Name="Coll_2" Header="Папка_02">
+                        <TreeViewItem Header="Файл_01"/>
+                        <TreeViewItem Header="Файл_02"/>
+                        <TreeViewItem Header="Файл_03"/>
+                    </TreeViewItem>
+                </TreeView>
+
+                <!--Кнопки-->
+                <StackPanel DockPanel.Dock="Top" Grid.Column="1">
+                    <Button Content="Добавить папку" Width="150" Height="30" Margin="0,30,0,0"/>
+                    <Button Content="Добавить заметку" Width="150" Height="30" Margin="0,5,0,0"/>
+                    <Button Content="Редактировать заметку" Width="150" Height="30" Margin="0,5,0,0"/>
+                    <Button Content="Удалить заметку" Width="150" Height="30" Margin="0,5,0,5"/>
+
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,0">
+                    <TextBlock Text="Login: TestLogin" Width="160" />
+                    <TextBlock Text="Email: TestEmail" Width="160" />
+                    <TextBlock Text="Дата Регистрации: 01.01.2023" Width="160" />
+                    <Button Content="Выйти"></Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Background="Red">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!--Название Папки и\или папок и заметов (типо как путь)-->
+                <RowDefinition Height="*"/>
+                <!--Поле для заполнения заметки контентом-->
+                <RowDefinition Height="Auto"/>
+                <!--Набор кнопок для изменения параметров Заметки или папки--> <!--Набор кнопок Сохранить/Отменить-->
+            </Grid.RowDefinitions>
+            <TextBlock  Grid.Row="0" x:Name="NoteTitle" Text="Имя заметки" Margin="5,0,0,0"></TextBlock>
+            <TextBox Grid.Row="1" x:Name="NoteContent" Text="Содержимое заметки" Margin="5,5,0,0"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                <Button Content="Изменить параметры заметки" Width="180" Height="20" Margin="0,5,0,0"/>
+                <ComboBox MaxWidth="180" Width="180">
+                    <ComboBoxItem Content="Рабочая"/>
+                    <ComboBoxItem Content="Личная"/>
+                    <ComboBoxItem Content="параметр_3"/>
+                    <ComboBoxItem Content="параметр_4"/>
+                    <ComboBoxItem Content="параметр_5"/>
+                </ComboBox>
+                <Button Content="Сохранить" Width="180" Height="20" Margin="5"/>
+                <Button Content="Перенести в архив" Width="180" Height="20" Margin="5"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
