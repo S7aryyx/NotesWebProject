@@ -202,7 +202,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(501, ex.Message);
         }
     }
 }

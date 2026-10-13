@@ -15,7 +15,7 @@ namespace WPF.Models
         public DateTime UpdatedAt { get; set; }
         public bool IsFavorite { get; set; }
         public bool IsArchive { get; set; }
-        public DateTime? Timer { get; set; } //Таймер до удаления
+        public DateTime? Timer { get; set; }
         public string? NoteType { get; set; }
     }
 }

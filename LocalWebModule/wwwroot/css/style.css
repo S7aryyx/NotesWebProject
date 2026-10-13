@@ -104,6 +104,21 @@ select {
     color: #202124;
 }
 
+.sidebar-action.danger {
+    background: #302126;
+    color: #ff8585;
+}
+
+.sidebar-action:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.sidebar-action.danger:not(:disabled):hover {
+    background: #47282f;
+    opacity: 1;
+}
+
 .sidebar-action:hover {
     opacity: 0.9;
 }
@@ -611,3 +626,81 @@ select {
         min-height: 650px;
     }
 }
+
+/* Общая тёмная тема Notes — визуально согласована с WPF-клиентом. */
+:root {
+    color-scheme: dark;
+    --notes-background: #101114;
+    --notes-sidebar: #16181d;
+    --notes-panel: #181a20;
+    --notes-card: #202229;
+    --notes-hover: #2d2f38;
+    --notes-active: #292b34;
+    --notes-text: #e6e6e6;
+    --notes-muted: #999ca6;
+    --notes-border: #33353e;
+    --notes-accent: #6c5ce7;
+}
+
+body { background: var(--notes-background); color: var(--notes-text); }
+.sidebar { background: var(--notes-sidebar); border-right-color: var(--notes-border); }
+.sidebar-header, .topbar, .panel-header, .editor-toolbar, .editor-footer, .account-card-wrapper { border-color: var(--notes-border); }
+.sidebar-header, .topbar { background: var(--notes-sidebar); }
+.brand-icon, .account-avatar, .account-modal-avatar { background: var(--notes-accent); }
+.icon-button { color: var(--notes-muted); }
+.icon-button:hover { background: var(--notes-hover); color: var(--notes-text); }
+.sidebar-action { background: var(--notes-accent); color: #fff; }
+.sidebar-action.secondary { background: #25272e; color: #d9dae0; }
+.sidebar-action.danger { background: #302126; color: #ff8585; }
+.sidebar-action:disabled { opacity: .35; cursor: not-allowed; }
+.sidebar-section-title, .page-subtitle, .panel-subtitle, .note-list-preview, .note-list-meta, .editor-status, .note-folder-label, .account-email, .account-arrow, .empty-editor p, .account-detail span { color: #999ca6; }
+.tree-item { color: #d9dae0; }
+.tree-item:hover { background: #22242b; }
+.tree-item.active { background: #292b34; color: #fff; font-weight: 700; }
+.tree-separator, .account-card-wrapper { border-color: var(--notes-border); }
+.tree-separator { background: var(--notes-border); }
+.account-card { background: var(--notes-card); color: var(--notes-text); }
+.account-card:hover { background: var(--notes-hover); }
+.main-content { color: var(--notes-text); }
+.page-title, .panel-title, .note-list-title, .empty-editor h3 { color: var(--notes-text); }
+.workspace { background: var(--notes-background); }
+.notes-panel, .editor-panel { background: var(--notes-panel); border-color: var(--notes-border); }
+.panel-header, .note-list-item { border-color: var(--notes-border); }
+.note-list-item { background: var(--notes-panel); color: var(--notes-text); }
+.note-list-item:hover { background: #22242b; }
+.note-list-item.active { background: #292b34; box-shadow: inset 3px 0 var(--notes-accent); }
+.note-type-badge, .empty-editor-icon { background: #292b34; color: #c9c5ff; }
+.editor-toolbar, .editor-footer { background: var(--notes-panel); }
+.note-title-row { display: flex; align-items: center; gap: 14px; padding: 20px 24px 8px; }
+.note-title-input { min-width: 0; flex: 1; padding: 0; background: transparent; color: #fff; }
+.note-title-input::placeholder, .note-content::placeholder { color: #666974; }
+.note-type-select { flex: 0 0 130px; background-color: #25272e; color: #e6e6e6; border-color: #3a3c46; }
+.note-type-select:focus, .form-control:focus, .form-select:focus { background-color: #25272e; color: #e6e6e6; border-color: var(--notes-accent); box-shadow: 0 0 0 .2rem rgb(108 92 231 / 18%); }
+.note-meta { padding: 0 24px 10px; }
+.note-content { background: transparent; color: #d8d9de; }
+.editor-buttons .btn-light, .topbar-actions .btn-light { background: #25272e; border-color: transparent; color: #d9dae0; }
+.editor-buttons .btn-light:hover, .topbar-actions .btn-light:hover { background: #343640; color: #fff; }
+#favorite_button .bi-star-fill { color: #ffd166; }
+.btn-dark { background: var(--notes-accent); border-color: var(--notes-accent); color: #fff; }
+.btn-dark:hover { background: #7b6df0; border-color: #7b6df0; }
+.btn-outline-danger { color: #ff8585; border-color: #684047; }
+.btn-outline-danger:hover { background: #302126; color: #ff9b9b; border-color: #8d505a; }
+.modal-content { background: #181a20; color: var(--notes-text); border: 1px solid var(--notes-border); }
+.modal-header, .modal-footer { border-color: var(--notes-border) !important; }
+.btn-close { filter: invert(1) grayscale(1); }
+.form-control, .form-select { background-color: #25272e; color: var(--notes-text); border-color: #3a3c46; }
+.form-control::placeholder { color: #777a85; }
+.account-details, .account-detail { border-color: var(--notes-border); }
+.account-detail { background: #202229; }
+.empty-list { color: #999ca6; }
+
+@media (max-width: 900px) {
+    .note-title-row { padding: 18px 16px 8px; gap: 8px; }
+    .note-title-input { font-size: 22px; }
+    .note-type-select { flex-basis: 115px; }
+    .workspace { grid-template-columns: minmax(0, 1fr); }
+    .notes-panel { max-height: 32vh; }
+}
+
+.modal .btn-light { background: #25272e; color: #d9dae0; border-color: #3a3c46; }
+.modal .btn-light:hover { background: #343640; color: #fff; }

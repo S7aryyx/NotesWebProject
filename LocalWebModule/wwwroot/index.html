@@ -37,6 +37,10 @@
                 <i class="bi bi-folder-plus"></i>
                 <span>Новая папка</span>
             </button>
+            <button id="delete_folder_button" class="sidebar-action danger" disabled>
+                <i class="bi bi-folder-x"></i>
+                <span>Удалить папку</span>
+            </button>
         </div>
 
         <div class="sidebar-section-title">Навигация</div>
@@ -137,9 +141,8 @@
                         </div>
                     </div>
 
-                    <input id="note_title" class="note-title-input" type="text" placeholder="Название заметки">
-
-                    <div class="note-meta">
+                    <div class="note-title-row">
+                        <input id="note_title" class="note-title-input" type="text" placeholder="Название заметки">
                         <select id="note_type" class="form-select form-select-sm note-type-select">
                             <option value="personal">Личное</option>
                             <option value="work">Работа</option>
@@ -147,7 +150,9 @@
                             <option value="project">Проект</option>
                             <option value="other">Другое</option>
                         </select>
+                    </div>
 
+                    <div class="note-meta">
                         <span id="note_folder_name" class="note-folder-label">
                             <i class="bi bi-folder"></i>
                             Без папки

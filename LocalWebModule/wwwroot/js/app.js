@@ -99,6 +99,9 @@ function setupEvents() {
 
     document.getElementById("create_folder_button")
         .addEventListener("click", createFolder);
+
+    document.getElementById("delete_folder_button")
+        .addEventListener("click", deleteSelectedFolder);
 }
 
 
@@ -114,6 +117,7 @@ async function loadData() {
 
     renderNavigationTree();
     renderNotesList();
+    updateFolderDeleteButton();
 }
 
 
@@ -263,9 +267,11 @@ function addSpecialNavigation(container, view, title, icon) {
         renderNavigationTree();
         renderNotesList();
         updatePageHeader();
+        updateFolderDeleteButton();
     });
 
     container.appendChild(button);
+    updateFolderDeleteButton();
 }
 
 
@@ -297,6 +303,7 @@ function renderFolderTree(folder, container, level) {
         renderNavigationTree();
         renderNotesList();
         updatePageHeader();
+        updateFolderDeleteButton();
     });
 
     container.appendChild(folderButton);
@@ -498,7 +505,7 @@ async function createFolder() {
     }
 
     const parentFolderId =
-        selectedView === "folder"
+        selectedView === "folder" && currentNoteId == null
             ? selectedFolderId
             : null;
 
@@ -536,12 +543,58 @@ async function createFolder() {
 }
 
 
+
+
+function updateFolderDeleteButton() {
+    const button = document.getElementById("delete_folder_button");
+    if (!button) return;
+    const canDelete = selectedView === "folder" && selectedFolderId != null && currentNoteId == null;
+    button.disabled = !canDelete;
+    button.title = canDelete ? "Удалить выбранную папку и её содержимое" : "Сначала выберите папку в дереве";
+}
+
+async function deleteSelectedFolder() {
+    if (selectedView !== "folder" || selectedFolderId == null || currentNoteId != null) {
+        updateFolderDeleteButton();
+        return;
+    }
+
+    const folder = folders.find(item => String(item.id).toLowerCase() === String(selectedFolderId).toLowerCase());
+    if (!folder) {
+        alert("Выбранная папка не найдена. Обновите список и попробуйте ещё раз.");
+        await loadData();
+        return;
+    }
+
+    if (!confirm(`Удалить папку «${folder.title}» и все вложенные папки и заметки внутри неё? Это действие нельзя отменить.`)) return;
+
+    const response = await apiRequest(`/api/folders/${encodeURIComponent(folder.id)}`, { method: "DELETE" });
+    if (!response.ok) {
+        const message = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+        alert("Не удалось удалить папку: " + message);
+        console.error("Folder delete failed:", response.status, response.data);
+        return;
+    }
+
+    selectedView = "all";
+    selectedFolderId = null;
+    currentNoteId = null;
+    currentNoteFolderId = null;
+    clearEditor();
+    await loadData();
+    renderNavigationTree();
+    renderNotesList();
+    updateFolderDeleteButton();
+}
+
+
 // ========================================
 // NOTE EDITOR
 // ========================================
 
 function openNote(note) {
     currentNoteId = note.id;
+    updateFolderDeleteButton();
     currentNoteFolderId = note.folderId || null;
 
     document.getElementById("empty_editor").classList.add("d-none");

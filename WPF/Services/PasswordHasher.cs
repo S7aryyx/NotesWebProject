@@ -17,7 +17,7 @@ public class PasswordHasher
     {
         if (string.IsNullOrWhiteSpace(password))
         {
-            throw new ArgumentException("Password cannot be empty.");
+            throw new ArgumentException("Пароль не может быть пустым.");
         }
         return _passwordHasher.HashPassword(null!, password);
     }
@@ -33,6 +33,9 @@ public class PasswordHasher
             return false;
         }
         PasswordVerificationResult result = _passwordHasher.VerifyHashedPassword(null!, passwordHash, password);
-        return (result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded);
+
+        return // Проверяем, является ли результат успешной проверкой или требует повторного хэширования(т.е . пароль совпадает, но хэш устарел)
+            (result == PasswordVerificationResult.Success || 
+                result == PasswordVerificationResult.SuccessRehashNeeded);
     }
 }

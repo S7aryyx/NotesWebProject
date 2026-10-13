@@ -1,4 +1,4 @@
-using LocalJsonModule.DTOs.Folders;
+﻿using LocalJsonModule.DTOs.Folders;
 using LocalJsonModule.Models;
 using LocalJsonModule.Repositories;
 
@@ -146,28 +146,29 @@ public class FolderService : IFolderService
     public async Task<bool> DeleteAsync(Guid id)
     {
         Folder? folder = await _repository.GetByIdAsync(id);
+        if (folder == null) return false;
 
-        if (folder == null)
-        {
-            return false;
-        }
+        List<Folder> allFolders = await _repository.GetByOwnerIdAsync(folder.OwnerId);
+        List<Guid> folderIds = GetFolderTreeIds(id, allFolders);
+        foreach (Guid folderId in folderIds)
+            await _noteRepository.DeleteByFolderIdAsync(folderId);
 
-        List<Folder> childFolders = await _repository.GetByParentFolderIdAsync(folder.OwnerId, id);
+        foreach (Guid folderId in folderIds)
+            await _repository.DeleteAsync(folderId);
 
-        if (childFolders.Count > 0)
-        {
-            throw new InvalidOperationException("Нельзя удалить папку, у которой есть вложенные папки.");
-        }
-
-        List<Note> notes = await _noteRepository.GetByFolderIdAsync(id);
-
-        if (notes.Count > 0)
-        {
-            throw new InvalidOperationException("Нельзя удалить папку, в которой есть заметки.");
-        }
-
-        await _repository.DeleteAsync(id);
         return true;
+    }
+
+    private static List<Guid> GetFolderTreeIds(Guid rootId, List<Folder> folders)
+    {
+        List<Guid> result = new();
+        void AddFolder(Guid id)
+        {
+            foreach (Folder child in folders.Where(f => f.ParentFolderId == id)) AddFolder(child.Id);
+            result.Add(id);
+        }
+        AddFolder(rootId);
+        return result;
     }
 
     public async Task<bool> DeleteByOwnerIdAsync(Guid ownerId)
