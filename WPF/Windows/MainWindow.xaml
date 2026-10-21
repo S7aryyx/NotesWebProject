@@ -288,8 +288,12 @@
             <ColumnDefinition x:Name="SidebarColumn" Width="280"/>
             <ColumnDefinition x:Name="DividerColumn" Width="1"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition x:Name="DividerColumn2" Width="1"/>
+            <ColumnDefinition x:Name="RightBarColumn" Width="280"/>
         </Grid.ColumnDefinitions>
 
+        
+        
         <Border x:Name="SidebarBorder" Grid.Column="0" Background="#16181D" Padding="14">
             <Grid>
                 <Grid.RowDefinitions>
@@ -563,5 +567,75 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <Border Grid.Column="3" Background="#343640" CornerRadius="15" Padding="24" Margin="0,20,0,0"/>
+        <Grid Grid.Column="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+            Background="#22252D"
+            CornerRadius="9,9,0,0">
+
+                <Grid>
+                    <TextBlock x:Name="TitleText"
+                       Text="ИИ Анализ"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="14,0,50,0"/>
+
+                    <Button x:Name="ToggleButton"
+                    Content="›"
+                    Width="36"
+                    Height="36"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,6,0"
+                    FontSize="22"
+                    Background="Transparent"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Click="ToggleButton_Click"/>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="ContentPanel"
+          Grid.Row="1"
+          Margin="14">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="ResponseTextBox"
+                 Grid.Row="0"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 Padding="12"
+                 Background="#20232B"
+                 Foreground="#E8EAF0"
+                 BorderBrush="#353943"
+                 FontSize="14"/>
+
+                <Button x:Name="GenerateButton"
+                Grid.Row="1"
+                Content="Сгенерировать анализ"
+                Height="44"
+                Margin="0,12,0,0"
+                Background="Purple"
+                Foreground="White"
+                BorderThickness="0"
+                FontSize="14"
+                FontWeight="SemiBold"
+                Click="GenerateButton_Click"/>
+            </Grid>
+        </Grid>
+
     </Grid>
 </Window>
