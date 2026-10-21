@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="LocalJsonModule/LocalJsonModule.csproj" />
-  <Project Path="LocalWebModule/LocalWebModule.csproj" />
-  <Project Path="WPF/WPF.csproj" Id="c37b88e8-85a6-4ea1-b703-b0ab6720bce8" />
+  <Project Path="LocalJsonModule/Console.csproj" />
+  <Project Path="LocalWebModule/WEB.csproj" />
+  <Project Path="WPF/Desktop_windows.csproj" Id="c37b88e8-85a6-4ea1-b703-b0ab6720bce8" />
 </Solution>
