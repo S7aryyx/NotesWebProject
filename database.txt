@@ -1,4 +1,4 @@
-CREATE TABLE "Users"
+CREATE TABLE "Ilgam"."Users"
 (
 	id UUID PRIMARY KEY ,
 	login VARCHAR(255) NOT NULL , 
@@ -7,7 +7,7 @@ CREATE TABLE "Users"
 	--Дата создания (у кого есть)
 );
 
-CREATE TABLE "Folders"
+CREATE TABLE "Ilgam"."Folders"
 (
 	id UUID PRIMARY KEY ,
 	title VARCHAR(255) NOT NULL,
@@ -15,11 +15,11 @@ CREATE TABLE "Folders"
 	owner_id UUID NOT NULL , 
 	created_at TIMESTAMP NOT NULL,
 	
-	FOREIGN KEY (owner_id) REFERENCES "Users"(id),
-	FOREIGN KEY (parent_folder_id) REFERENCES "Folders"(id)
+	FOREIGN KEY (owner_id) REFERENCES "Ilgam"."Users"(id),
+	FOREIGN KEY (parent_folder_id) REFERENCES "Ilgam"."Folders"(id)
 );
 
-CREATE TABLE "Notes"
+CREATE TABLE "Ilgam"."Notes"
 (
 	id UUID PRIMARY KEY ,
 	title VARCHAR(255) NOT NULL ,
@@ -32,6 +32,6 @@ CREATE TABLE "Notes"
 	is_archive BOOLEAN NOT NULL , 
 	note_type VARCHAR(50) NULL,	
 
-	FOREIGN KEY (owner_id) REFERENCES "Users"(id),
-	FOREIGN KEY (folder_id) REFERENCES "Folders"(id)
+	FOREIGN KEY (owner_id) REFERENCES "Ilgam"."Users"(id),
+	FOREIGN KEY (folder_id) REFERENCES "Ilgam"."Folders"(id)
 );

@@ -25,6 +25,12 @@ public class UserController : ControllerBase
         _updateService = updateService;
     }
 
+    [HttpGet("maxim_hello")]
+    public async Task<IActionResult> Maxim()
+    {
+        return BadRequest("Максим , тебе шалом из Турции.");
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
