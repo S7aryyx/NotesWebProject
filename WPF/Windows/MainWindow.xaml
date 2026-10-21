@@ -1,9 +1,9 @@
-﻿<Window
+<Window
     x:Class="WPF.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Notes"
-    Width="1600"
+    Width="1200"
     Height="750"
     MinWidth="800"
     MinHeight="550"
@@ -448,6 +448,14 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                     <Button
+                        x:Name="ShowAIButton"
+                        Content="ИИ анализ"
+                        Style="{StaticResource ActionButton}"
+                        Margin="0,0,7,0"
+                        ToolTip="Показать панель ИИ-анализа"
+                        Visibility="Collapsed"
+                        Click="ToggleButton_Click"/>
+                    <Button
                         x:Name="FavoriteButton"
                         Content="★"
                         Style="{StaticResource ActionButton}"
@@ -568,74 +576,73 @@
             </Border>
         </Grid>
 
-        <Border Grid.Column="3" Background="#343640" CornerRadius="15" Padding="24" Margin="0,20,0,0"/>
-        <Grid Grid.Column="4" x:Name="AI_Column">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="48"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <Border x:Name="AIDivider" Grid.Column="3" Background="#292B32"/>
 
-            <Border Grid.Row="0"
-            Background="#22252D"
-            CornerRadius="9,9,0,0">
-
-                <Grid>
-                    <TextBlock x:Name="TitleText"
-                       Text="ИИ Анализ"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Margin="14,0,50,0"/>
-
-                    <Button x:Name="ToggleButton"
-                    Content="›"
-                    Width="36"
-                    Height="36"
-                    HorizontalAlignment="Right"
-                    Margin="0,0,6,0"
-                    FontSize="22"
-                    Background="Transparent"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Click="ToggleButton_Click"/>
-                </Grid>
-            </Border>
-
-            <Grid x:Name="ContentPanel"
-          Grid.Row="1"
-          Margin="14">
-
+        <Border Grid.Column="4" x:Name="AI_Column" Background="#16181D" Padding="14">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBox x:Name="ResponseTextBox"
-                 Grid.Row="0"
-                 IsReadOnly="True"
-                 TextWrapping="Wrap"
-                 AcceptsReturn="True"
-                 VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Disabled"
-                 Padding="12"
-                 Background="#20232B"
-                 Foreground="#E8EAF0"
-                 BorderBrush="#353943"
-                 FontSize="14"/>
+                <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock x:Name="TitleText"
+                                   Text="ИИ Анализ"
+                                   Foreground="White"
+                                   FontSize="22"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="Анализ текущей заметки"
+                                   Foreground="#777A85"
+                                   FontSize="12"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button x:Name="ToggleButton"
+                            Grid.Column="1"
+                            Content="›"
+                            Style="{StaticResource ActionButton}"
+                            Width="36"
+                            Padding="0"
+                            FontSize="22"
+                            ToolTip="Скрыть панель ИИ-анализа"
+                            Click="ToggleButton_Click"/>
+                </Grid>
 
-                <Button x:Name="GenerateButton"
-                Grid.Row="1"
-                Content="Сгенерировать анализ"
-                Height="44"
-                Margin="0,12,0,0"
-                Background="Purple"
-                Foreground="White"
-                BorderThickness="0"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Click="GenerateButton_Click"/>
+                <Border Grid.Row="1" Background="#181A20" CornerRadius="15" Padding="12">
+                    <Grid x:Name="ContentPanel">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBox x:Name="ResponseTextBox"
+                                 Grid.Row="0"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Disabled"
+                                 Padding="4"
+                                 Background="Transparent"
+                                 Foreground="#E8EAF0"
+                                 BorderThickness="0"
+                                 FontSize="14"
+                                 FontFamily="Segoe UI"/>
+                        <Button x:Name="GenerateButton"
+                                Grid.Row="1"
+                                Content="Сгенерировать анализ"
+                                Style="{StaticResource PrimaryButton}"
+                                Height="44"
+                                Margin="0,12,0,0"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Click="GenerateButton_Click"/>
+                    </Grid>
+                </Border>
             </Grid>
-        </Grid>
-
+        </Border>
     </Grid>
 </Window>

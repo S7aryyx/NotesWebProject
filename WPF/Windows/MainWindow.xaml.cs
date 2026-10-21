@@ -1,458 +1,1076 @@
-﻿using System.Net.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WPF.Models;
 
-namespace WPF.Windows;
-
-public partial class MainWindow : Window
+namespace WPF.Windows
 {
-    private HttpClient httpClient = new()
+    public partial class MainWindow : Window
     {
-        BaseAddress = new Uri("https://localhost:7110/")
-    };
-    private readonly User _currentUser;
-    private List<Folder> _folders = new();
-    private List<Note> _notes = new();
-    private Note? _currentNote;
-    private Folder? _selectedFolder;
-    private bool _sidebarVisible = true;
-    private bool _loadingEditor;
+        private HttpClient httpClient = new HttpClient();
+        private User currentUser;
 
-    //Свойства для Окна и ИИ-Анализом
-    private bool _aiBarVisible = true;
-    private double baseWidth = 420; //Полное окно
-    private double findWidth = 100; //Свёрнутое
+        private List<Folder> folders = new List<Folder>();
+        private List<Note> notes = new List<Note>();
 
-    public MainWindow(User user)
-    {
-        InitializeComponent();
-        _currentUser = user;
-        UserLoginTextBlock.Text = user.Login;
-        UserAvatarText.Text = string.IsNullOrWhiteSpace(user.Login) ? "U" : user.Login[..1].ToUpper();
-        NoteTypeComboBox.SelectedIndex = 0;
-        UpdateEditorPlaceholders();
-        Loaded += async (_, _) => await LoadDataAsync();
-        UpdateActions();
-    }
+        private Note currentNote;
+        private Folder selectedFolder;
 
-    private async Task LoadDataAsync()
-    {
-        try
+        private bool sidebarVisible = true;
+        private bool aiPanelVisible = true;
+        private bool loadingEditor = false;
+
+        private const double SidebarWidth = 280;
+        private const double AiPanelWidth = 280;
+
+        public MainWindow(User user)
         {
-            _folders = await App.NotesDataService.GetFoldersAsync(_currentUser.Id);
-            _notes = await App.NotesDataService.GetNotesAsync(_currentUser.Id);
-            RenderTree();
-            if (_currentNote != null)
+            InitializeComponent();
+
+            currentUser = user;
+            httpClient.BaseAddress = new Uri("https://localhost:7110/");
+            httpClient.Timeout = TimeSpan.FromMinutes(3);
+
+            UserLoginTextBlock.Text = currentUser.Login;
+
+            if (string.IsNullOrWhiteSpace(currentUser.Login))
             {
-                TreeViewItem? item = FindTreeItem(_currentNote.Id);
-                if (item != null) item.IsSelected = true;
-                else ClearEditor();
-            }
-            NoteStatusTextBlock.Text = $"Папок: {_folders.Count} · Заметок: {_notes.Count(n => !n.IsArchive)}";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Не удалось загрузить заметки: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        UpdateActions();
-    }
-
-    private void RenderTree()
-    {
-        NotesTreeView.Items.Clear();
-        foreach (Folder folder in _folders.Where(f => f.ParentFolderId == null).OrderBy(f => f.Title))
-            NotesTreeView.Items.Add(CreateFolderItem(folder));
-        foreach (Note note in _notes.Where(n => n.FolderId == null && !n.IsArchive).OrderBy(n => n.Title))
-            NotesTreeView.Items.Add(CreateNoteItem(note));
-
-        List<Note> archivedNotes = _notes.Where(n => n.IsArchive).OrderBy(n => n.Title).ToList();
-        TreeViewItem archiveItem = new() { Tag = "archive", IsExpanded = true, Header = CreateTreeHeader("▣", $"Архив ({archivedNotes.Count})") };
-        foreach (Note note in archivedNotes) archiveItem.Items.Add(CreateNoteItem(note));
-        NotesTreeView.Items.Add(archiveItem);
-    }
-
-    private TreeViewItem CreateFolderItem(Folder folder)
-    {
-        TreeViewItem item = new() { Tag = folder, IsExpanded = true, Header = CreateTreeHeader("📁", folder.Title), ToolTip = folder.Title };
-        foreach (Folder child in _folders.Where(f => f.ParentFolderId == folder.Id).OrderBy(f => f.Title))
-            item.Items.Add(CreateFolderItem(child));
-        foreach (Note note in _notes.Where(n => n.FolderId == folder.Id && !n.IsArchive).OrderBy(n => n.Title))
-            item.Items.Add(CreateNoteItem(note));
-        return item;
-    }
-
-    private TreeViewItem CreateNoteItem(Note note)
-    {
-        string icon = note.IsArchive ? "↶" : note.IsFavorite ? "★" : "▤";
-        TreeViewItem item = new() { Tag = note, Header = CreateTreeHeader(icon, note.Title), ToolTip = note.Title };
-        return item;
-    }
-
-    private static Grid CreateTreeHeader(string icon, string title)
-    {
-        Grid header = new() { MinWidth = 0 };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(22) });
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        TextBlock iconText = new() { Text = icon, Foreground = new SolidColorBrush(Color.FromRgb(160, 157, 190)), VerticalAlignment = VerticalAlignment.Center, FontSize = 12 };
-        TextBlock nameText = new() { Text = title, Foreground = new SolidColorBrush(Color.FromRgb(217, 218, 224)), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 200 };
-        Grid.SetColumn(nameText, 1);
-        header.Children.Add(iconText);
-        header.Children.Add(nameText);
-        return header;
-    }
-
-    private TreeViewItem? FindTreeItem(Guid id)
-    {
-        foreach (object value in NotesTreeView.Items)
-        {
-            if (value is TreeViewItem item && FindTreeItem(item, id) is TreeViewItem found) return found;
-        }
-        return null;
-    }
-
-    private static TreeViewItem? FindTreeItem(TreeViewItem item, Guid id)
-    {
-        if (item.Tag is Note note && note.Id == id || item.Tag is Folder folder && folder.Id == id) return item;
-        foreach (object child in item.Items)
-            if (child is TreeViewItem childItem && FindTreeItem(childItem, id) is TreeViewItem found) return found;
-        return null;
-    }
-
-    private void NotesTreeView_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        DependencyObject? source = e.OriginalSource as DependencyObject;
-        while (source != null && source is not TreeViewItem && source != NotesTreeView)
-            source = VisualTreeHelper.GetParent(source);
-        if (source is TreeViewItem || source != NotesTreeView) return;
-        foreach (object value in NotesTreeView.Items)
-            if (value is TreeViewItem item) ClearTreeSelection(item);
-        _currentNote = null;
-        _selectedFolder = null;
-        ClearEditor();
-    }
-
-    private static void ClearTreeSelection(TreeViewItem item)
-    {
-        item.IsSelected = false;
-        foreach (object value in item.Items)
-            if (value is TreeViewItem child) ClearTreeSelection(child);
-    }
-
-    private void NoteTitleTextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateEditorPlaceholders();
-    private void NoteContentTextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateEditorPlaceholders();
-
-    private void UpdateEditorPlaceholders()
-    {
-        if (NoteTitlePlaceholder != null) NoteTitlePlaceholder.Visibility = string.IsNullOrEmpty(NoteTitleTextBox.Text) ? Visibility.Visible : Visibility.Collapsed;
-        if (NoteContentPlaceholder != null) NoteContentPlaceholder.Visibility = string.IsNullOrEmpty(NoteContentTextBox.Text) ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private void NotesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-        if (e.NewValue is not TreeViewItem item) return;
-        if (item.Tag is string view && view == "archive")
-        {
-            _currentNote = null;
-            _selectedFolder = null;
-            _loadingEditor = true;
-            NoteTitleHeader.Text = "Архив";
-            NoteTitleTextBox.Text = string.Empty;
-            NoteContentTextBox.Text = string.Empty;
-            NoteTypeComboBox.SelectedIndex = 0;
-            NoteStatusTextBlock.Text = "Архивные заметки. Выберите заметку, чтобы восстановить её.";
-            _loadingEditor = false;
-        }
-        else if (item.Tag is Note note)
-        {
-            _currentNote = note;
-            _selectedFolder = _folders.FirstOrDefault(f => f.Id == note.FolderId);
-            ShowNote(note);
-        }
-        else if (item.Tag is Folder folder)
-        {
-            _currentNote = null;
-            _selectedFolder = folder;
-            _loadingEditor = true;
-            NoteTitleHeader.Text = folder.Title;
-            NoteTitleTextBox.Text = string.Empty;
-            NoteContentTextBox.Text = string.Empty;
-            NoteTypeComboBox.SelectedIndex = 0;
-            NoteStatusTextBlock.Text = "Папка выбрана. Новая заметка будет создана внутри неё.";
-            _loadingEditor = false;
-        }
-        UpdateActions();
-    }
-
-    private void ShowNote(Note note)
-    {
-        _loadingEditor = true;
-        NoteTitleHeader.Text = note.Title;
-        NoteTitleTextBox.Text = note.Title;
-        NoteContentTextBox.Text = note.Content;
-        SelectNoteType(note.NoteType);
-        NoteStatusTextBlock.Text = note.IsArchive ? "Заметка в архиве" : $"Изменено: {note.UpdatedAt.ToLocalTime():dd.MM.yyyy HH:mm}";
-        FavoriteButton.Content = note.IsFavorite ? "★" : "☆";
-        FavoriteButton.Foreground = new SolidColorBrush(note.IsFavorite ? Color.FromRgb(255, 209, 102) : Color.FromRgb(180, 182, 192));
-        ArchiveButton.Content = note.IsArchive ? "Восстановить" : "Архив";
-        _loadingEditor = false;
-    }
-
-    private void SelectNoteType(string? type)
-    {
-        string value = string.IsNullOrWhiteSpace(type) ? "personal" : type.ToLowerInvariant();
-        foreach (ComboBoxItem item in NoteTypeComboBox.Items)
-            if ((string)item.Tag == value) { NoteTypeComboBox.SelectedItem = item; return; }
-        NoteTypeComboBox.SelectedIndex = 0;
-    }
-
-    private void NewNoteButton_Click(object sender, RoutedEventArgs e)
-    {
-        _currentNote = null;
-        _selectedFolder = NotesTreeView.SelectedItem is TreeViewItem item
-            ? item.Tag is Folder folder ? folder : item.Tag is Note selectedNote ? _folders.FirstOrDefault(f => f.Id == selectedNote.FolderId) : null
-            : null;
-        _loadingEditor = true;
-        NoteTitleHeader.Text = "Новая заметка";
-        NoteTitleTextBox.Text = string.Empty;
-        NoteContentTextBox.Text = string.Empty;
-        NoteTypeComboBox.SelectedIndex = 0;
-        NoteStatusTextBlock.Text = _selectedFolder == null ? "Новая заметка · Без папки" : $"Новая заметка · {_selectedFolder.Title}";
-        FavoriteButton.Content = "☆";
-        FavoriteButton.Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192));
-        ArchiveButton.Content = "Архив";
-        _loadingEditor = false;
-        UpdateActions();
-        NoteTitleTextBox.Focus();
-    }
-
-    private async void NewFolderButton_Click(object sender, RoutedEventArgs e)
-    {
-        string? title = PromptFolderName();
-        if (string.IsNullOrWhiteSpace(title)) return;
-        Folder? parent = NotesTreeView.SelectedItem is TreeViewItem item ? item.Tag as Folder : null;
-        try
-        {
-            Folder folder = await App.NotesDataService.CreateFolderAsync(_currentUser.Id, title.Trim(), parent?.Id);
-            await LoadDataAsync();
-            TreeViewItem? createdItem = FindTreeItem(folder.Id);
-            if (createdItem != null) createdItem.IsSelected = true;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Не удалось создать папку: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private string? PromptFolderName()
-    {
-        Window dialog = new() { Title = "Новая папка", Width = 360, Height = 165, WindowStartupLocation = WindowStartupLocation.CenterOwner, Owner = this, ResizeMode = ResizeMode.NoResize, Background = new SolidColorBrush(Color.FromRgb(24, 26, 32)), Foreground = Brushes.White };
-        StackPanel panel = new() { Margin = new Thickness(16) };
-        TextBox input = new() { Height = 32, Padding = new Thickness(8), Background = new SolidColorBrush(Color.FromRgb(37, 39, 46)), Foreground = Brushes.White, BorderBrush = new SolidColorBrush(Color.FromRgb(58, 60, 70)) };
-        StackPanel buttons = new() { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        Button cancel = new() { Content = "Отмена", Width = 85, Height = 32, Margin = new Thickness(0, 0, 8, 0), IsCancel = true };
-        Button create = new() { Content = "Создать", Width = 85, Height = 32, IsDefault = true, Background = new SolidColorBrush(Color.FromRgb(108, 92, 231)), Foreground = Brushes.White };
-        create.Click += (_, _) => { if (!string.IsNullOrWhiteSpace(input.Text)) dialog.DialogResult = true; else MessageBox.Show(dialog, "Введите название папки."); };
-        buttons.Children.Add(cancel);
-        buttons.Children.Add(create);
-        panel.Children.Add(new TextBlock { Text = NotesTreeView.SelectedItem is TreeViewItem selected && selected.Tag is Folder parent ? $"Вложенная папка в «{parent.Title}»" : "Главная папка", Margin = new Thickness(0, 0, 0, 7), Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192)) });
-        panel.Children.Add(input);
-        panel.Children.Add(buttons);
-        dialog.Content = panel;
-        dialog.Loaded += (_, _) => input.Focus();
-        return dialog.ShowDialog() == true ? input.Text : null;
-    }
-
-    private async void SaveNoteButton_Click(object sender, RoutedEventArgs e)
-    {
-        string title = NoteTitleTextBox.Text.Trim();
-        if (title.Length == 0) { MessageBox.Show("Введите название заметки.", "Заметка", MessageBoxButton.OK, MessageBoxImage.Information); NoteTitleTextBox.Focus(); return; }
-        string noteType = NoteTypeComboBox.SelectedItem is ComboBoxItem selected ? (string)selected.Tag : "personal";
-        try
-        {
-            if (_currentNote == null)
-            {
-                _currentNote = new Note { OwnerId = _currentUser.Id, FolderId = _selectedFolder?.Id, Title = title, Content = NoteContentTextBox.Text, NoteType = noteType };
-                _currentNote = await App.NotesDataService.CreateNoteAsync(_currentNote);
+                UserAvatarText.Text = "U";
             }
             else
             {
-                _currentNote.Title = title;
-                _currentNote.Content = NoteContentTextBox.Text;
-                _currentNote.NoteType = noteType;
-                await App.NotesDataService.UpdateNoteAsync(_currentNote);
+                UserAvatarText.Text = currentUser.Login.Substring(0, 1).ToUpper();
             }
-            await LoadDataAsync();
-            TreeViewItem? savedItem = FindTreeItem(_currentNote.Id);
-            if (savedItem != null) savedItem.IsSelected = true;
-            NoteStatusTextBlock.Text = "Сохранено";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Не удалось сохранить заметку: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
-    private async void FavoriteButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_currentNote == null) return;
-        try
-        {
-            _currentNote.IsFavorite = !_currentNote.IsFavorite;
-            await App.NotesDataService.SetNoteStateAsync(_currentUser.Id, _currentNote.Id, "is_favorite", _currentNote.IsFavorite);
-            await LoadDataAsync();
-            TreeViewItem? item = FindTreeItem(_currentNote.Id);
-            if (item != null) item.IsSelected = true;
-            ShowNote(_currentNote);
-        }
-        catch (Exception ex) { MessageBox.Show("Не удалось изменить избранное: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error); }
-    }
+            NoteTypeComboBox.SelectedIndex = 0;
+            UpdateEditorPlaceholders();
+            UpdateActions();
 
-    private async void ArchiveButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_currentNote == null) return;
-        try
+            Loaded += MainWindow_Loaded;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            _currentNote.IsArchive = !_currentNote.IsArchive;
-            await App.NotesDataService.SetNoteStateAsync(_currentUser.Id, _currentNote.Id, "is_archive", _currentNote.IsArchive);
-            if (_currentNote.IsArchive) { _currentNote = null; ClearEditor(); }
             await LoadDataAsync();
         }
-        catch (Exception ex) { MessageBox.Show("Не удалось изменить архив: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error); }
-    }
 
-    private async void DeleteButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_currentNote != null)
+        private async Task LoadDataAsync()
         {
-            if (MessageBox.Show($"Удалить заметку «{_currentNote.Title}»?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
             try
             {
-                await App.NotesDataService.DeleteNoteAsync(_currentUser.Id, _currentNote.Id);
-                _currentNote = null;
-                ClearEditor();
-                await LoadDataAsync();
-            }
-            catch (Exception ex) { MessageBox.Show("Не удалось удалить заметку: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error); }
-            return;
-        }
-        if (_selectedFolder == null) return;
-        string message = $"Удалить папку «{_selectedFolder.Title}» и все вложенные папки и заметки внутри неё? Это действие нельзя отменить.";
-        if (MessageBox.Show(message, "Удаление папки", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-        try
-        {
-            Guid deletedId = _selectedFolder.Id;
-            await App.NotesDataService.DeleteFolderTreeAsync(_currentUser.Id, deletedId);
-            _selectedFolder = null;
-            ClearEditor();
-            await LoadDataAsync();
-        }
-        catch (Exception ex) { MessageBox.Show("Не удалось удалить папку: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error); }
-    }
+                folders = await App.NotesDataService.GetFoldersAsync(currentUser.Id);
+                notes = await App.NotesDataService.GetNotesAsync(currentUser.Id);
 
-    private void ClearEditor()
-    {
-        _selectedFolder = null;
-        _loadingEditor = true;
-        NoteTitleHeader.Text = "Мои заметки";
-        NoteTitleTextBox.Text = string.Empty;
-        NoteContentTextBox.Text = string.Empty;
-        NoteTypeComboBox.SelectedIndex = 0;
-        NoteStatusTextBlock.Text = "Выберите заметку или создайте новую";
-        _loadingEditor = false;
-        UpdateActions();
-    }
+                RenderTree();
 
-    private void UpdateActions()
-    {
-        bool isNote = _currentNote != null;
-        FavoriteButton.IsEnabled = isNote;
-        ArchiveButton.IsEnabled = isNote;
-        DeleteButton.IsEnabled = isNote || _selectedFolder != null;
-        DeleteButton.Content = _selectedFolder != null && !isNote ? "Удалить папку" : "Удалить";
-    }
-
-    private void NoteTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (!_loadingEditor && _currentNote != null) NoteStatusTextBlock.Text = "Есть несохранённые изменения";
-    }
-
-    private void ToggleSidebarButton_Click(object sender, RoutedEventArgs e)
-    {
-        _sidebarVisible = !_sidebarVisible;
-        SidebarColumn.Width = new GridLength(_sidebarVisible ? 280 : 0);
-        DividerColumn.Width = new GridLength(_sidebarVisible ? 1 : 0);
-        SidebarBorder.Visibility = _sidebarVisible ? Visibility.Visible : Visibility.Collapsed;
-        SidebarDivider.Visibility = _sidebarVisible ? Visibility.Visible : Visibility.Collapsed;
-        HideSidebarButton.Visibility = _sidebarVisible ? Visibility.Visible : Visibility.Collapsed;
-        ShowSidebarButton.Visibility = _sidebarVisible ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private void LogoutButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (MessageBox.Show("Выйти из аккаунта?", "Выход", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
-        new LoginWindow().Show();
-        Close();
-    }
-
-    //Методы для 3го раздела ИИ Анализа.
-
-    //private void ToggleButton_Click(object sender, RoutedEventArgs e)
-    //{//Кнопка свернуть
-    //    isShow = !isShow;
-    //    Width = isShow ? baseWidth : findWidth;
-
-    //    ToggleButton.Content = isShow ? "<" : ">";
-    //}
-
-    private void ToggleButton_Click(object sender , RoutedEventArgs e)
-    {
-        _aiBarVisible = !_aiBarVisible;
-        AI_Column.Width = new GridLength(_aiBarVisible ? baseWidth : findWidth);
-        AI_Column.Visibility = _aiBarVisible ? Visibility.Visible : Visibility.Collapsed;
-        ToggleButton.Visibility = _aiBarVisible ? Visibility.Visible : Visibility.Collapsed;
-        ToggleButton.Visibility = _aiBarVisible ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private async void GenerateButton_Click(object sender, RoutedEventArgs e)
-    {
-        GenerateButton.IsEnabled = false;
-        ResponseTextBox.Text = "Анализ в процессе генерации. Ожидайте!";
-        try
-        {
-            var request = new ChatRequest
-            {
-                Message = JsonSerializer.Serialize(new
+                if (currentNote != null)
                 {
-                    NoteTitle = "Название Заметки",
-                    NoteContent = "рецепт блинов",
-                    NoteType = "Личное"
-                }),
-                Prompt = "analyse"
+                    TreeViewItem item = FindTreeItem(currentNote.Id);
+
+                    if (item != null)
+                    {
+                        item.IsSelected = true;
+                    }
+                    else
+                    {
+                        ClearEditor();
+                    }
+                }
+
+                int activeNotesCount = notes.Count(note => !note.IsArchive);
+                NoteStatusTextBlock.Text = "Папок: " + folders.Count + " · Заметок: " + activeNotesCount;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось загрузить заметки: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+
+            UpdateActions();
+        }
+
+        private void RenderTree()
+        {
+            NotesTreeView.Items.Clear();
+
+            foreach (Folder folder in folders
+                .Where(folder => folder.ParentFolderId == null)
+                .OrderBy(folder => folder.Title))
+            {
+                NotesTreeView.Items.Add(CreateFolderItem(folder));
+            }
+
+            foreach (Note note in notes
+                .Where(note => note.FolderId == null && !note.IsArchive)
+                .OrderBy(note => note.Title))
+            {
+                NotesTreeView.Items.Add(CreateNoteItem(note));
+            }
+
+            List<Note> archivedNotes = notes
+                .Where(note => note.IsArchive)
+                .OrderBy(note => note.Title)
+                .ToList();
+
+            TreeViewItem archiveItem = new TreeViewItem();
+            archiveItem.Tag = "archive";
+            archiveItem.IsExpanded = true;
+            archiveItem.Header = CreateTreeHeader("▣", "Архив (" + archivedNotes.Count + ")");
+
+            foreach (Note note in archivedNotes)
+            {
+                archiveItem.Items.Add(CreateNoteItem(note));
+            }
+
+            NotesTreeView.Items.Add(archiveItem);
+        }
+
+        private TreeViewItem CreateFolderItem(Folder folder)
+        {
+            TreeViewItem item = new TreeViewItem();
+            item.Tag = folder;
+            item.IsExpanded = true;
+            item.Header = CreateTreeHeader("📁", folder.Title);
+            item.ToolTip = folder.Title;
+
+            foreach (Folder childFolder in folders
+                .Where(child => child.ParentFolderId == folder.Id)
+                .OrderBy(child => child.Title))
+            {
+                item.Items.Add(CreateFolderItem(childFolder));
+            }
+
+            foreach (Note note in notes
+                .Where(note => note.FolderId == folder.Id && !note.IsArchive)
+                .OrderBy(note => note.Title))
+            {
+                item.Items.Add(CreateNoteItem(note));
+            }
+
+            return item;
+        }
+
+        private TreeViewItem CreateNoteItem(Note note)
+        {
+            string icon = "▤";
+
+            if (note.IsArchive)
+            {
+                icon = "↶";
+            }
+            else if (note.IsFavorite)
+            {
+                icon = "★";
+            }
+
+            TreeViewItem item = new TreeViewItem();
+            item.Tag = note;
+            item.Header = CreateTreeHeader(icon, note.Title);
+            item.ToolTip = note.Title;
+
+            return item;
+        }
+
+        private static Grid CreateTreeHeader(string icon, string title)
+        {
+            Grid header = new Grid();
+            header.MinWidth = 0;
+
+            ColumnDefinition iconColumn = new ColumnDefinition();
+            iconColumn.Width = new GridLength(22);
+
+            ColumnDefinition titleColumn = new ColumnDefinition();
+            titleColumn.Width = new GridLength(1, GridUnitType.Star);
+
+            header.ColumnDefinitions.Add(iconColumn);
+            header.ColumnDefinitions.Add(titleColumn);
+
+            TextBlock iconText = new TextBlock();
+            iconText.Text = icon;
+            iconText.Foreground = new SolidColorBrush(Color.FromRgb(160, 157, 190));
+            iconText.VerticalAlignment = VerticalAlignment.Center;
+            iconText.FontSize = 12;
+
+            TextBlock nameText = new TextBlock();
+            nameText.Text = title;
+            nameText.Foreground = new SolidColorBrush(Color.FromRgb(217, 218, 224));
+            nameText.VerticalAlignment = VerticalAlignment.Center;
+            nameText.TextTrimming = TextTrimming.CharacterEllipsis;
+            nameText.MaxWidth = 200;
+
+            Grid.SetColumn(nameText, 1);
+
+            header.Children.Add(iconText);
+            header.Children.Add(nameText);
+
+            return header;
+        }
+
+        private TreeViewItem FindTreeItem(Guid id)
+        {
+            foreach (object value in NotesTreeView.Items)
+            {
+                TreeViewItem item = value as TreeViewItem;
+
+                if (item != null)
+                {
+                    TreeViewItem foundItem = FindTreeItem(item, id);
+
+                    if (foundItem != null)
+                    {
+                        return foundItem;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static TreeViewItem FindTreeItem(TreeViewItem item, Guid id)
+        {
+            Note note = item.Tag as Note;
+            Folder folder = item.Tag as Folder;
+
+            if (note != null && note.Id == id)
+            {
+                return item;
+            }
+
+            if (folder != null && folder.Id == id)
+            {
+                return item;
+            }
+
+            foreach (object value in item.Items)
+            {
+                TreeViewItem childItem = value as TreeViewItem;
+
+                if (childItem != null)
+                {
+                    TreeViewItem foundItem = FindTreeItem(childItem, id);
+
+                    if (foundItem != null)
+                    {
+                        return foundItem;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void NotesTreeView_PreviewMouseLeftButtonDown(
+            object sender,
+            System.Windows.Input.MouseButtonEventArgs e)
+        {
+            DependencyObject source = e.OriginalSource as DependencyObject;
+
+            while (source != null && !(source is TreeViewItem) && source != NotesTreeView)
+            {
+                source = VisualTreeHelper.GetParent(source);
+            }
+
+            if (source is TreeViewItem || source != NotesTreeView)
+            {
+                return;
+            }
+
+            foreach (object value in NotesTreeView.Items)
+            {
+                TreeViewItem item = value as TreeViewItem;
+
+                if (item != null)
+                {
+                    ClearTreeSelection(item);
+                }
+            }
+
+            currentNote = null;
+            selectedFolder = null;
+            ClearEditor();
+        }
+
+        private static void ClearTreeSelection(TreeViewItem item)
+        {
+            item.IsSelected = false;
+
+            foreach (object value in item.Items)
+            {
+                TreeViewItem child = value as TreeViewItem;
+
+                if (child != null)
+                {
+                    ClearTreeSelection(child);
+                }
+            }
+        }
+
+        private void NoteTitleTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateEditorPlaceholders();
+        }
+
+        private void NoteContentTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateEditorPlaceholders();
+        }
+
+        private void UpdateEditorPlaceholders()
+        {
+            if (NoteTitlePlaceholder != null)
+            {
+                if (string.IsNullOrEmpty(NoteTitleTextBox.Text))
+                {
+                    NoteTitlePlaceholder.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    NoteTitlePlaceholder.Visibility = Visibility.Collapsed;
+                }
+            }
+
+            if (NoteContentPlaceholder != null)
+            {
+                if (string.IsNullOrEmpty(NoteContentTextBox.Text))
+                {
+                    NoteContentPlaceholder.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    NoteContentPlaceholder.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void NotesTreeView_SelectedItemChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e)
+        {
+            TreeViewItem item = e.NewValue as TreeViewItem;
+
+            if (item == null)
+            {
+                return;
+            }
+
+            string view = item.Tag as string;
+
+            if (view == "archive")
+            {
+                currentNote = null;
+                selectedFolder = null;
+                loadingEditor = true;
+
+                NoteTitleHeader.Text = "Архив";
+                NoteTitleTextBox.Text = "";
+                NoteContentTextBox.Text = "";
+                NoteTypeComboBox.SelectedIndex = 0;
+                NoteStatusTextBlock.Text = "Архивные заметки. Выберите заметку, чтобы восстановить её.";
+
+                loadingEditor = false;
+            }
+            else
+            {
+                Note note = item.Tag as Note;
+                Folder folder = item.Tag as Folder;
+
+                if (note != null)
+                {
+                    currentNote = note;
+                    selectedFolder = folders.FirstOrDefault(value => value.Id == note.FolderId);
+                    ShowNote(note);
+                }
+                else if (folder != null)
+                {
+                    currentNote = null;
+                    selectedFolder = folder;
+                    loadingEditor = true;
+
+                    NoteTitleHeader.Text = folder.Title;
+                    NoteTitleTextBox.Text = "";
+                    NoteContentTextBox.Text = "";
+                    NoteTypeComboBox.SelectedIndex = 0;
+                    NoteStatusTextBlock.Text = "Папка выбрана. Новая заметка будет создана внутри неё.";
+
+                    loadingEditor = false;
+                }
+            }
+
+            UpdateActions();
+        }
+
+        private void ShowNote(Note note)
+        {
+            loadingEditor = true;
+
+            NoteTitleHeader.Text = note.Title;
+            NoteTitleTextBox.Text = note.Title;
+            NoteContentTextBox.Text = note.Content;
+
+            SelectNoteType(note.NoteType);
+
+            if (note.IsArchive)
+            {
+                NoteStatusTextBlock.Text = "Заметка в архиве";
+            }
+            else
+            {
+                NoteStatusTextBlock.Text = "Изменено: " + note.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+            }
+
+            if (note.IsFavorite)
+            {
+                FavoriteButton.Content = "★";
+                FavoriteButton.Foreground = new SolidColorBrush(Color.FromRgb(255, 209, 102));
+            }
+            else
+            {
+                FavoriteButton.Content = "☆";
+                FavoriteButton.Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192));
+            }
+
+            if (note.IsArchive)
+            {
+                ArchiveButton.Content = "Восстановить";
+            }
+            else
+            {
+                ArchiveButton.Content = "Архив";
+            }
+
+            loadingEditor = false;
+        }
+
+        private void SelectNoteType(string type)
+        {
+            string value = "personal";
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                value = type.ToLowerInvariant();
+            }
+
+            foreach (ComboBoxItem item in NoteTypeComboBox.Items)
+            {
+                if (item.Tag != null && item.Tag.ToString() == value)
+                {
+                    NoteTypeComboBox.SelectedItem = item;
+                    return;
+                }
+            }
+
+            NoteTypeComboBox.SelectedIndex = 0;
+        }
+
+        private void NewNoteButton_Click(object sender, RoutedEventArgs e)
+        {
+            currentNote = null;
+            selectedFolder = null;
+
+            TreeViewItem selectedItem = NotesTreeView.SelectedItem as TreeViewItem;
+
+            if (selectedItem != null)
+            {
+                Folder folder = selectedItem.Tag as Folder;
+                Note note = selectedItem.Tag as Note;
+
+                if (folder != null)
+                {
+                    selectedFolder = folder;
+                }
+                else if (note != null)
+                {
+                    selectedFolder = folders.FirstOrDefault(value => value.Id == note.FolderId);
+                }
+            }
+
+            loadingEditor = true;
+
+            NoteTitleHeader.Text = "Новая заметка";
+            NoteTitleTextBox.Text = "";
+            NoteContentTextBox.Text = "";
+            NoteTypeComboBox.SelectedIndex = 0;
+
+            if (selectedFolder == null)
+            {
+                NoteStatusTextBlock.Text = "Новая заметка · Без папки";
+            }
+            else
+            {
+                NoteStatusTextBlock.Text = "Новая заметка · " + selectedFolder.Title;
+            }
+
+            FavoriteButton.Content = "☆";
+            FavoriteButton.Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192));
+            ArchiveButton.Content = "Архив";
+
+            loadingEditor = false;
+
+            UpdateActions();
+            NoteTitleTextBox.Focus();
+        }
+
+        private async void NewFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            string title = PromptFolderName();
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return;
+            }
+
+            Folder parentFolder = null;
+            TreeViewItem selectedItem = NotesTreeView.SelectedItem as TreeViewItem;
+
+            if (selectedItem != null)
+            {
+                parentFolder = selectedItem.Tag as Folder;
+            }
+
+            try
+            {
+                Folder folder = await App.NotesDataService.CreateFolderAsync(
+                    currentUser.Id,
+                    title.Trim(),
+                    parentFolder == null ? (Guid?)null : parentFolder.Id);
+
+                await LoadDataAsync();
+
+                TreeViewItem createdItem = FindTreeItem(folder.Id);
+
+                if (createdItem != null)
+                {
+                    createdItem.IsSelected = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось создать папку: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private string PromptFolderName()
+        {
+            Window dialog = new Window();
+            dialog.Title = "Новая папка";
+            dialog.Width = 360;
+            dialog.Height = 165;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            dialog.Owner = this;
+            dialog.ResizeMode = ResizeMode.NoResize;
+            dialog.Background = new SolidColorBrush(Color.FromRgb(24, 26, 32));
+            dialog.Foreground = Brushes.White;
+
+            StackPanel panel = new StackPanel();
+            panel.Margin = new Thickness(16);
+
+            TextBox input = new TextBox();
+            input.Height = 32;
+            input.Padding = new Thickness(8);
+            input.Background = new SolidColorBrush(Color.FromRgb(37, 39, 46));
+            input.Foreground = Brushes.White;
+            input.BorderBrush = new SolidColorBrush(Color.FromRgb(58, 60, 70));
+
+            StackPanel buttons = new StackPanel();
+            buttons.Orientation = Orientation.Horizontal;
+            buttons.HorizontalAlignment = HorizontalAlignment.Right;
+            buttons.Margin = new Thickness(0, 12, 0, 0);
+
+            Button cancel = new Button();
+            cancel.Content = "Отмена";
+            cancel.Width = 85;
+            cancel.Height = 32;
+            cancel.Margin = new Thickness(0, 0, 8, 0);
+            cancel.IsCancel = true;
+
+            Button create = new Button();
+            create.Content = "Создать";
+            create.Width = 85;
+            create.Height = 32;
+            create.IsDefault = true;
+            create.Background = new SolidColorBrush(Color.FromRgb(108, 92, 231));
+            create.Foreground = Brushes.White;
+
+            create.Click += delegate
+            {
+                if (!string.IsNullOrWhiteSpace(input.Text))
+                {
+                    dialog.DialogResult = true;
+                }
+                else
+                {
+                    MessageBox.Show(dialog, "Введите название папки.");
+                }
             };
 
-            using var respose = await httpClient.PostAsJsonAsync("api/chat", request);
-            respose.EnsureSuccessStatusCode(); //Ожидаем получение ответа от ИИ до полной готовности
+            buttons.Children.Add(cancel);
+            buttons.Children.Add(create);
 
-            var final_answer = await respose.Content.ReadAsStringAsync();
-            ResponseTextBox.Text = final_answer ?? "ИИ не вернула ответ";
+            TreeViewItem selectedItem = NotesTreeView.SelectedItem as TreeViewItem;
+            Folder selectedParent = null;
+
+            if (selectedItem != null)
+            {
+                selectedParent = selectedItem.Tag as Folder;
+            }
+
+            TextBlock hint = new TextBlock();
+            hint.Margin = new Thickness(0, 0, 0, 7);
+            hint.Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192));
+
+            if (selectedParent != null)
+            {
+                hint.Text = "Вложенная папка в «" + selectedParent.Title + "»";
+            }
+            else
+            {
+                hint.Text = "Главная папка";
+            }
+
+            panel.Children.Add(hint);
+            panel.Children.Add(input);
+            panel.Children.Add(buttons);
+
+            dialog.Content = panel;
+            dialog.Loaded += delegate { input.Focus(); };
+
+            bool? result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                return input.Text;
+            }
+
+            return null;
         }
-        catch (Exception ex)
+
+        private async void SaveNoteButton_Click(object sender, RoutedEventArgs e)
         {
-            ResponseTextBox.Text = $"Не удалось получить анализ {ex.Message}";
+            string title = NoteTitleTextBox.Text.Trim();
+
+            if (title.Length == 0)
+            {
+                MessageBox.Show(
+                    "Введите название заметки.",
+                    "Заметка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                NoteTitleTextBox.Focus();
+                return;
+            }
+
+            string noteType = "personal";
+            ComboBoxItem selectedType = NoteTypeComboBox.SelectedItem as ComboBoxItem;
+
+            if (selectedType != null && selectedType.Tag != null)
+            {
+                noteType = selectedType.Tag.ToString();
+            }
+
+            try
+            {
+                if (currentNote == null)
+                {
+                    Note newNote = new Note();
+                    newNote.OwnerId = currentUser.Id;
+
+                    if (selectedFolder != null)
+                    {
+                        newNote.FolderId = selectedFolder.Id;
+                    }
+
+                    newNote.Title = title;
+                    newNote.Content = NoteContentTextBox.Text;
+                    newNote.NoteType = noteType;
+
+                    currentNote = await App.NotesDataService.CreateNoteAsync(newNote);
+                }
+                else
+                {
+                    currentNote.Title = title;
+                    currentNote.Content = NoteContentTextBox.Text;
+                    currentNote.NoteType = noteType;
+
+                    await App.NotesDataService.UpdateNoteAsync(currentNote);
+                }
+
+                await LoadDataAsync();
+
+                TreeViewItem savedItem = FindTreeItem(currentNote.Id);
+
+                if (savedItem != null)
+                {
+                    savedItem.IsSelected = true;
+                }
+
+                NoteStatusTextBlock.Text = "Сохранено";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось сохранить заметку: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
-        finally
+
+        private async void FavoriteButton_Click(object sender, RoutedEventArgs e)
         {
-            GenerateButton.IsEnabled = true;
+            if (currentNote == null)
+            {
+                return;
+            }
+
+            try
+            {
+                currentNote.IsFavorite = !currentNote.IsFavorite;
+
+                await App.NotesDataService.SetNoteStateAsync(
+                    currentUser.Id,
+                    currentNote.Id,
+                    "is_favorite",
+                    currentNote.IsFavorite);
+
+                await LoadDataAsync();
+
+                TreeViewItem item = FindTreeItem(currentNote.Id);
+
+                if (item != null)
+                {
+                    item.IsSelected = true;
+                }
+
+                ShowNote(currentNote);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось изменить избранное: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async void ArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentNote == null)
+            {
+                return;
+            }
+
+            try
+            {
+                currentNote.IsArchive = !currentNote.IsArchive;
+
+                await App.NotesDataService.SetNoteStateAsync(
+                    currentUser.Id,
+                    currentNote.Id,
+                    "is_archive",
+                    currentNote.IsArchive);
+
+                if (currentNote.IsArchive)
+                {
+                    currentNote = null;
+                    ClearEditor();
+                }
+
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось изменить архив: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentNote != null)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "Удалить заметку «" + currentNote.Title + "»?",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                try
+                {
+                    await App.NotesDataService.DeleteNoteAsync(currentUser.Id, currentNote.Id);
+
+                    currentNote = null;
+                    ClearEditor();
+
+                    await LoadDataAsync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        "Не удалось удалить заметку: " + ex.Message,
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+
+                return;
+            }
+
+            if (selectedFolder == null)
+            {
+                return;
+            }
+
+            string message = "Удалить папку «" + selectedFolder.Title
+                + "» и все вложенные папки и заметки внутри неё? Это действие нельзя отменить.";
+
+            MessageBoxResult folderResult = MessageBox.Show(
+                message,
+                "Удаление папки",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (folderResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                Guid deletedId = selectedFolder.Id;
+
+                await App.NotesDataService.DeleteFolderTreeAsync(currentUser.Id, deletedId);
+
+                selectedFolder = null;
+                ClearEditor();
+
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось удалить папку: " + ex.Message,
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void ClearEditor()
+        {
+            selectedFolder = null;
+            loadingEditor = true;
+
+            NoteTitleHeader.Text = "Мои заметки";
+            NoteTitleTextBox.Text = "";
+            NoteContentTextBox.Text = "";
+            NoteTypeComboBox.SelectedIndex = 0;
+            NoteStatusTextBlock.Text = "Выберите заметку или создайте новую";
+
+            loadingEditor = false;
+
+            UpdateActions();
+        }
+
+        private void UpdateActions()
+        {
+            bool isNoteSelected = currentNote != null;
+
+            FavoriteButton.IsEnabled = isNoteSelected;
+            ArchiveButton.IsEnabled = isNoteSelected;
+            DeleteButton.IsEnabled = isNoteSelected || selectedFolder != null;
+
+            if (selectedFolder != null && !isNoteSelected)
+            {
+                DeleteButton.Content = "Удалить папку";
+            }
+            else
+            {
+                DeleteButton.Content = "Удалить";
+            }
+        }
+
+        private void NoteTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!loadingEditor && currentNote != null)
+            {
+                NoteStatusTextBlock.Text = "Есть несохранённые изменения";
+            }
+        }
+
+        private void ToggleSidebarButton_Click(object sender, RoutedEventArgs e)
+        {
+            sidebarVisible = !sidebarVisible;
+
+            if (sidebarVisible)
+            {
+                SidebarColumn.Width = new GridLength(SidebarWidth);
+                DividerColumn.Width = new GridLength(1);
+                SidebarBorder.Visibility = Visibility.Visible;
+                SidebarDivider.Visibility = Visibility.Visible;
+                HideSidebarButton.Visibility = Visibility.Visible;
+                ShowSidebarButton.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SidebarColumn.Width = new GridLength(0);
+                DividerColumn.Width = new GridLength(0);
+                SidebarBorder.Visibility = Visibility.Collapsed;
+                SidebarDivider.Visibility = Visibility.Collapsed;
+                HideSidebarButton.Visibility = Visibility.Collapsed;
+                ShowSidebarButton.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show(
+                "Выйти из аккаунта?",
+                "Выход",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            LoginWindow loginWindow = new LoginWindow();
+            loginWindow.Show();
+            Close();
+        }
+
+        // Открывает и скрывает правую панель ИИ-анализа.
+        private void ToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (aiPanelVisible)
+            {
+                aiPanelVisible = false;
+                RightBarColumn.Width = new GridLength(0);
+                DividerColumn2.Width = new GridLength(0);
+                AI_Column.Visibility = Visibility.Collapsed;
+                AIDivider.Visibility = Visibility.Collapsed;
+                ShowAIButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                aiPanelVisible = true;
+                RightBarColumn.Width = new GridLength(AiPanelWidth);
+                DividerColumn2.Width = new GridLength(1);
+                AI_Column.Visibility = Visibility.Visible;
+                AIDivider.Visibility = Visibility.Visible;
+                ShowAIButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void GenerateButton_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateButton.IsEnabled = false;
+            ResponseTextBox.Text = "Выполняется анализ. Пожалуйста, подождите.";
+
+            try
+            {
+                ChatRequest request = new ChatRequest();
+
+                request.Message = JsonSerializer.Serialize(new
+                {
+                    NoteTitle = NoteTitleTextBox.Text,
+                    NoteContent = NoteContentTextBox.Text,
+                    NoteType = GetSelectedNoteType()
+                });
+
+                request.Prompt = "analyse";
+
+                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/chat", request);
+                response.EnsureSuccessStatusCode();
+
+                string answer = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrWhiteSpace(answer))
+                {
+                    ResponseTextBox.Text = "ИИ не вернул ответ.";
+                }
+                else
+                {
+                    ResponseTextBox.Text = RemoveMarkdownSymbols(answer);
+                }
+            }
+            catch (Exception ex)
+            {
+                ResponseTextBox.Text = "Не удалось получить анализ: " + ex.Message;
+            }
+            finally
+            {
+                GenerateButton.IsEnabled = true;
+            }
+        }
+
+        private string GetSelectedNoteType()
+        {
+            ComboBoxItem selectedType = NoteTypeComboBox.SelectedItem as ComboBoxItem;
+
+            if (selectedType != null && selectedType.Content != null)
+            {
+                return selectedType.Content.ToString();
+            }
+
+            return "Личное";
+        }
+
+        // Убираем основные обозначения Markdown, чтобы они не отображались в TextBox.
+        private string RemoveMarkdownSymbols(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return string.Empty;
+            }
+
+            // Заголовки: ## Заголовок -> Заголовок.
+            text = Regex.Replace(text, @"(?m)^\s{0,3}#{1,6}\s*", "");
+
+            // Обычные списки: - пункт или * пункт -> • пункт.
+            text = Regex.Replace(text, @"(?m)^\s*[-*+]\s+", "• ");
+            text = Regex.Replace(text, @"(?m)^\s*\d+[.)]\s+", "• ");
+
+            // Убираем выделение, зачёркивание, код и блоки кода.
+            text = text.Replace("**", "");
+            text = text.Replace("__", "");
+            text = text.Replace("~~", "");
+            text = text.Replace("`", "");
+            text = Regex.Replace(text, @"(?m)^\s*>\s?", "");
+            text = Regex.Replace(text, @"(?m)^\s*[-*_]{3,}\s*$", "");
+
+            return text.Trim();
+        }
+
+        public class ChatRequest
+        {
+            public string Message { get; set; } = "";
+            public string Prompt { get; set; } = "analyse";
         }
     }
-    public class ChatRequest
-    {
-        public string Message { get; set; }
-        public string Prompt { get; set; } = "analyse";
-    }
-
 }
