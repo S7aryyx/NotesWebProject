@@ -23,7 +23,7 @@ public partial class MainWindow : Window
     private bool _loadingEditor;
 
     //Свойства для Окна и ИИ-Анализом
-    private bool isShow = true;
+    private bool _aiBarVisible = true;
     private double baseWidth = 420; //Полное окно
     private double findWidth = 100; //Свёрнутое
 
@@ -400,12 +400,21 @@ public partial class MainWindow : Window
 
     //Методы для 3го раздела ИИ Анализа.
 
-    private void ToggleButton_Click(object sender, RoutedEventArgs e)
-    {//Кнопка свернуть
-        isShow = !isShow;
-        Width = isShow ? baseWidth : findWidth;
+    //private void ToggleButton_Click(object sender, RoutedEventArgs e)
+    //{//Кнопка свернуть
+    //    isShow = !isShow;
+    //    Width = isShow ? baseWidth : findWidth;
 
-        ToggleButton.Content = isShow ? "<" : ">";
+    //    ToggleButton.Content = isShow ? "<" : ">";
+    //}
+
+    private void ToggleButton_Click(object sender , RoutedEventArgs e)
+    {
+        _aiBarVisible = !_aiBarVisible;
+        AI_Column.Width = new GridLength(_aiBarVisible ? baseWidth : findWidth);
+        AI_Column.Visibility = _aiBarVisible ? Visibility.Visible : Visibility.Collapsed;
+        ToggleButton.Visibility = _aiBarVisible ? Visibility.Visible : Visibility.Collapsed;
+        ToggleButton.Visibility = _aiBarVisible ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private async void GenerateButton_Click(object sender, RoutedEventArgs e)
