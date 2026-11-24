@@ -7,6 +7,6 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Payments.Api/Payments.Api.csproj" />
+    <ProjectReference Include="../Payments.Contracts/Payments.Contracts.csproj" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ public partial class RegisterWindow : Window
     public RegisterWindow()
     {
         InitializeComponent();
+        WindowTheme.Attach(this);
     }
 
 

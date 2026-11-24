@@ -1,4 +1,4 @@
-﻿using LocalJsonModule.Data;
+using LocalJsonModule.Data;
 using LocalJsonModule.Models;
 using Npgsql;
 
@@ -28,7 +28,7 @@ public class NotePostgresRepository : INoteRepository
                 is_archive,
                 timer,
                 note_type
-            FROM "Ilgam"."Notes"
+            FROM "content"."Notes"
             ORDER BY updated_at DESC;
             """;
 
@@ -63,7 +63,7 @@ public class NotePostgresRepository : INoteRepository
                 is_archive,
                 timer,
                 note_type
-            FROM "Ilgam"."Notes"
+            FROM "content"."Notes"
             WHERE id = @id;
             """;
 
@@ -99,7 +99,7 @@ public class NotePostgresRepository : INoteRepository
                 is_archive,
                 timer,
                 note_type
-            FROM "Ilgam"."Notes"
+            FROM "content"."Notes"
             WHERE owner_id = @owner_id
             ORDER BY updated_at DESC;
             """;
@@ -138,7 +138,7 @@ public class NotePostgresRepository : INoteRepository
                 is_archive,
                 timer,
                 note_type
-            FROM "Ilgam"."Notes"
+            FROM "content"."Notes"
             WHERE folder_id = @folder_id
             ORDER BY updated_at DESC;
             """;
@@ -165,7 +165,7 @@ public class NotePostgresRepository : INoteRepository
     public async Task AddAsync(Note note)
     {
         const string sql = """
-            INSERT INTO "Ilgam"."Notes"
+            INSERT INTO "content"."Notes"
             (
                 id,
                 title,
@@ -234,7 +234,7 @@ public class NotePostgresRepository : INoteRepository
     public async Task UpdateAsync(Note note)
     {
         const string sql = """
-            UPDATE "Ilgam"."Notes"
+            UPDATE "content"."Notes"
             SET
                 title = @title,
                 content = @content,
@@ -284,7 +284,7 @@ public class NotePostgresRepository : INoteRepository
     public async Task DeleteAsync(Guid id)
     {
         const string sql = """
-            DELETE FROM "Ilgam"."Notes"
+            DELETE FROM "content"."Notes"
             WHERE id = @id;
             """;
 
@@ -301,7 +301,7 @@ public class NotePostgresRepository : INoteRepository
     public async Task DeleteByOwnerIdAsync(Guid ownerId)
     {
         const string sql = """
-            DELETE FROM "Ilgam"."Notes"
+            DELETE FROM "content"."Notes"
             WHERE owner_id = @owner_id;
             """;
 
@@ -318,7 +318,7 @@ public class NotePostgresRepository : INoteRepository
     public async Task DeleteByFolderIdAsync(Guid folderId)
     {
         const string sql = """
-            DELETE FROM "Ilgam"."Notes"
+            DELETE FROM "content"."Notes"
             WHERE folder_id = @folder_id;
             """;
 

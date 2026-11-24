@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WebPaymentTest.Models;
-using WebPaymentTest.Service;
 
 namespace PaymentWindow
 {

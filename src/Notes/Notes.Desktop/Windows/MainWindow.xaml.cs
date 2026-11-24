@@ -37,6 +37,7 @@ namespace WPF.Windows
         public MainWindow(User user)
         {
             InitializeComponent();
+        WindowTheme.Attach(this);
 
             currentUser = user;
             httpClient.BaseAddress = new Uri("https://localhost:7110/"); // LocalAI.Api
@@ -570,97 +571,106 @@ namespace WPF.Windows
 
         private string PromptFolderName()
         {
-            Window dialog = new Window();
-            dialog.Title = "Новая папка";
-            dialog.Width = 360;
-            dialog.Height = 165;
-            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            dialog.Owner = this;
-            dialog.ResizeMode = ResizeMode.NoResize;
-            dialog.Background = new SolidColorBrush(Color.FromRgb(24, 26, 32));
-            dialog.Foreground = Brushes.White;
+            var dialog = new Window
+            {
+                Title = "Новая папка",
+                Width = 420,
+                MinWidth = 380,
+                SizeToContent = SizeToContent.Height,
+                MinHeight = 190,
+                MaxHeight = 260,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(24, 26, 32)),
+                Foreground = Brushes.White,
+                WindowStyle = WindowStyle.SingleBorderWindow,
+                ShowInTaskbar = false
+            };
 
-            StackPanel panel = new StackPanel();
-            panel.Margin = new Thickness(16);
+            var panel = new Grid { Margin = new Thickness(20) };
+            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            TextBox input = new TextBox();
-            input.Height = 32;
-            input.Padding = new Thickness(8);
-            input.Background = new SolidColorBrush(Color.FromRgb(37, 39, 46));
-            input.Foreground = Brushes.White;
-            input.BorderBrush = new SolidColorBrush(Color.FromRgb(58, 60, 70));
+            TreeViewItem? selectedItem = NotesTreeView.SelectedItem as TreeViewItem;
+            Folder? selectedParent = selectedItem?.Tag as Folder;
 
-            StackPanel buttons = new StackPanel();
-            buttons.Orientation = Orientation.Horizontal;
-            buttons.HorizontalAlignment = HorizontalAlignment.Right;
-            buttons.Margin = new Thickness(0, 12, 0, 0);
+            var hint = new TextBlock
+            {
+                Text = selectedParent != null
+                    ? $"Вложенная папка в «{selectedParent.Title}»"
+                    : "Главная папка",
+                Margin = new Thickness(0, 0, 0, 10),
+                Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192)),
+                TextWrapping = TextWrapping.Wrap
+            };
+            Grid.SetRow(hint, 0);
+            panel.Children.Add(hint);
 
-            Button cancel = new Button();
-            cancel.Content = "Отмена";
-            cancel.Width = 85;
-            cancel.Height = 32;
-            cancel.Margin = new Thickness(0, 0, 8, 0);
-            cancel.IsCancel = true;
+            var input = new TextBox
+            {
+                Height = 36,
+                MinWidth = 330,
+                Padding = new Thickness(9, 6, 9, 6),
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Background = new SolidColorBrush(Color.FromRgb(37, 39, 46)),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(58, 60, 70))
+            };
+            Grid.SetRow(input, 1);
+            panel.Children.Add(input);
 
-            Button create = new Button();
-            create.Content = "Создать";
-            create.Width = 85;
-            create.Height = 32;
-            create.IsDefault = true;
-            create.Background = new SolidColorBrush(Color.FromRgb(108, 92, 231));
-            create.Foreground = Brushes.White;
+            var buttons = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 18, 0, 0)
+            };
 
-            create.Click += delegate
+            var cancel = new Button
+            {
+                Content = "Отмена",
+                MinWidth = 96,
+                Height = 36,
+                Padding = new Thickness(12, 4, 12, 4),
+                Margin = new Thickness(0, 0, 10, 0),
+                IsCancel = true
+            };
+
+            var create = new Button
+            {
+                Content = "Создать",
+                MinWidth = 104,
+                Height = 36,
+                Padding = new Thickness(12, 4, 12, 4),
+                IsDefault = true,
+                Background = new SolidColorBrush(Color.FromRgb(108, 92, 231)),
+                Foreground = Brushes.White
+            };
+
+            create.Click += (_, _) =>
             {
                 if (!string.IsNullOrWhiteSpace(input.Text))
-                {
                     dialog.DialogResult = true;
-                }
                 else
-                {
-                    MessageBox.Show(dialog, "Введите название папки.");
-                }
+                    MessageBox.Show(dialog, "Введите название папки.", "Новая папка",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
             };
 
             buttons.Children.Add(cancel);
             buttons.Children.Add(create);
-
-            TreeViewItem selectedItem = NotesTreeView.SelectedItem as TreeViewItem;
-            Folder selectedParent = null;
-
-            if (selectedItem != null)
-            {
-                selectedParent = selectedItem.Tag as Folder;
-            }
-
-            TextBlock hint = new TextBlock();
-            hint.Margin = new Thickness(0, 0, 0, 7);
-            hint.Foreground = new SolidColorBrush(Color.FromRgb(180, 182, 192));
-
-            if (selectedParent != null)
-            {
-                hint.Text = "Вложенная папка в «" + selectedParent.Title + "»";
-            }
-            else
-            {
-                hint.Text = "Главная папка";
-            }
-
-            panel.Children.Add(hint);
-            panel.Children.Add(input);
+            Grid.SetRow(buttons, 2);
             panel.Children.Add(buttons);
 
             dialog.Content = panel;
-            dialog.Loaded += delegate { input.Focus(); };
-
-            bool? result = dialog.ShowDialog();
-
-            if (result == true)
+            dialog.Loaded += (_, _) =>
             {
-                return input.Text;
-            }
+                input.Focus();
+                input.SelectAll();
+            };
 
-            return null;
+            return dialog.ShowDialog() == true ? input.Text.Trim() : null;
         }
 
         private async void SaveNoteButton_Click(object sender, RoutedEventArgs e)

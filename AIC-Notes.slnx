@@ -8,4 +8,9 @@
     <Project Path="src/LocalAI/LocalAI.Api/LocalAI.Api.csproj" />
     <Project Path="src/LocalAI/LocalAI.Desktop/LocalAI.Desktop.csproj" />
   </Folder>
+  <Folder Name="/Payments/">
+    <Project Path="src/Payments/Payments.Contracts/Payments.Contracts.csproj" />
+    <Project Path="src/Payments/Payments.Api/Payments.Api.csproj" />
+    <Project Path="src/Payments/Payments.Desktop/Payments.Desktop.csproj" />
+  </Folder>
 </Solution>

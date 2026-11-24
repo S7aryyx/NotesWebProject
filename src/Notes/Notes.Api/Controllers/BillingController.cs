@@ -62,7 +62,7 @@ public sealed class BillingController : ControllerBase
 
         await using var connection = _connections.CreateConnection();
         await connection.OpenAsync(ct);
-        await using (var userCommand = new NpgsqlCommand("""SELECT 1 FROM "Ilgam"."Users" WHERE id = @id;""", connection))
+        await using (var userCommand = new NpgsqlCommand("""SELECT 1 FROM "auth"."Users" WHERE id = @id;""", connection))
         {
             userCommand.Parameters.AddWithValue("id", userId);
             if (await userCommand.ExecuteScalarAsync(ct) is null)
@@ -100,7 +100,7 @@ public sealed class BillingController : ControllerBase
         string confirmationUrl = root.GetProperty("confirmation").GetProperty("confirmation_url").GetString() ?? "";
 
         await using var insert = new NpgsqlCommand("""
-            INSERT INTO "Ilgam"."PaymentTransactions"
+            INSERT INTO "billing"."PaymentTransactions"
                 (id, user_id, plan, amount, currency, status, created_at)
             VALUES (@id, @user_id, @plan, @amount, 'RUB', @status, now())
             ON CONFLICT (id) DO NOTHING;
@@ -126,7 +126,7 @@ public sealed class BillingController : ControllerBase
         await connection.OpenAsync(ct);
         await using var command = new NpgsqlCommand("""
             SELECT has_lifetime_access, subscription_until
-            FROM "Ilgam"."UserAccess"
+            FROM "billing"."UserAccess"
             WHERE user_id = @user_id;
             """, connection);
         command.Parameters.AddWithValue("user_id", userId);
@@ -165,7 +165,7 @@ public sealed class BillingController : ControllerBase
         await connection.OpenAsync(ct);
         await using var command = new NpgsqlCommand("""
             SELECT has_lifetime_access, subscription_until
-            FROM "Ilgam"."UserAccess"
+            FROM "billing"."UserAccess"
             WHERE user_id = @user_id;
             """, connection);
         command.Parameters.AddWithValue("user_id", userId);
@@ -220,84 +220,102 @@ public sealed class BillingController : ControllerBase
         await connection.OpenAsync(ct);
         await using var tx = await connection.BeginTransactionAsync(ct);
 
+        Guid userId;
+        string plan;
+        decimal expectedAmount;
+        string expectedCurrency;
+        bool wasAlreadyPaid;
+
+        // Lock the transaction row so duplicate YooKassa notifications are idempotent.
+        await using (var findPayment = new NpgsqlCommand("""
+            SELECT user_id, plan, amount, currency, paid
+            FROM "billing"."PaymentTransactions"
+            WHERE id = @id
+            FOR UPDATE;
+            """, connection, tx))
+        {
+            findPayment.Parameters.AddWithValue("id", paymentId);
+            await using var reader = await findPayment.ExecuteReaderAsync(ct);
+            if (!await reader.ReadAsync(ct))
+            {
+                await reader.CloseAsync();
+                await tx.RollbackAsync(ct);
+                // Payment row may be committed shortly after provider creation; ask YooKassa to retry.
+                return StatusCode(503);
+            }
+
+            userId = reader.GetGuid(0);
+            plan = reader.GetString(1);
+            expectedAmount = reader.GetDecimal(2);
+            expectedCurrency = reader.GetString(3).Trim();
+            wasAlreadyPaid = reader.GetBoolean(4);
+        }
+
+        decimal actualAmount = 0m;
+        string actualCurrency = "";
+        if (root.TryGetProperty("amount", out var amountElement))
+        {
+            decimal.TryParse(
+                amountElement.GetProperty("value").GetString(),
+                System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out actualAmount);
+            actualCurrency = amountElement.GetProperty("currency").GetString() ?? "";
+        }
+
+        if (actualAmount != expectedAmount || actualCurrency != expectedCurrency)
+        {
+            await tx.RollbackAsync(ct);
+            _logger.LogWarning("Payment amount/currency mismatch for {PaymentId}", paymentId);
+            return BadRequest();
+        }
+
         await using (var updatePayment = new NpgsqlCommand("""
-            UPDATE "Ilgam"."PaymentTransactions"
+            UPDATE "billing"."PaymentTransactions"
             SET status = @status, paid = @paid, updated_at = now()
-            WHERE id = @id AND paid = FALSE
-            RETURNING user_id, plan, amount, currency;
+            WHERE id = @id;
             """, connection, tx))
         {
             updatePayment.Parameters.AddWithValue("status", status);
             updatePayment.Parameters.AddWithValue("paid", paid);
             updatePayment.Parameters.AddWithValue("id", paymentId);
-            await using var reader = await updatePayment.ExecuteReaderAsync(ct);
-            if (!await reader.ReadAsync(ct))
-            {
-                await reader.CloseAsync();
-                await tx.RollbackAsync(ct);
-                return StatusCode(503); // Пусть ЮKassa повторит webhook, если запись ещё не успела сохраниться.
-            }
-
-            Guid userId = reader.GetGuid(0);
-            string plan = reader.GetString(1);
-            decimal expectedAmount = reader.GetDecimal(2);
-            string expectedCurrency = reader.GetString(3).Trim();
-            await reader.CloseAsync();
-
-            decimal actualAmount = 0m;
-            string actualCurrency = "";
-            if (root.TryGetProperty("amount", out var amountElement))
-            {
-                decimal.TryParse(
-                    amountElement.GetProperty("value").GetString(),
-                    System.Globalization.NumberStyles.Number,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out actualAmount);
-                actualCurrency = amountElement.GetProperty("currency").GetString() ?? "";
-            }
-
-            if (actualAmount != expectedAmount || actualCurrency != expectedCurrency)
-            {
-                await tx.RollbackAsync(ct);
-                _logger.LogWarning("Payment amount/currency mismatch for {PaymentId}", paymentId);
-                return BadRequest();
-            }
-
-            if (status == "succeeded" && paid)
-            {
-                if (plan == "lifetime")
-                {
-                    await using var grant = new NpgsqlCommand("""
-                        INSERT INTO "Ilgam"."UserAccess"
-                            (user_id, has_lifetime_access, subscription_until, updated_at)
-                        VALUES (@user_id, TRUE, NULL, now())
-                        ON CONFLICT (user_id) DO UPDATE SET
-                            has_lifetime_access = TRUE,
-                            subscription_until = NULL,
-                            updated_at = now();
-                        """, connection, tx);
-                    grant.Parameters.AddWithValue("user_id", userId);
-                    await grant.ExecuteNonQueryAsync(ct);
-                }
-                else if (plan == "monthly")
-                {
-                    await using var grant = new NpgsqlCommand("""
-                        INSERT INTO "Ilgam"."UserAccess"
-                            (user_id, has_lifetime_access, subscription_until, updated_at)
-                        VALUES (@user_id, FALSE, now() + interval '30 days', now())
-                        ON CONFLICT (user_id) DO UPDATE SET
-                            subscription_until = GREATEST(
-                                COALESCE("UserAccess".subscription_until, now()),
-                                now()) + interval '30 days',
-                            updated_at = now()
-                        WHERE NOT "UserAccess".has_lifetime_access;
-                        """, connection, tx);
-                    grant.Parameters.AddWithValue("user_id", userId);
-                    await grant.ExecuteNonQueryAsync(ct);
-                }
-            }
+            await updatePayment.ExecuteNonQueryAsync(ct);
         }
 
+        // Do not grant access twice when YooKassa retries the same succeeded event.
+        if (status == "succeeded" && paid && !wasAlreadyPaid)
+        {
+            if (plan == "lifetime")
+            {
+                await using var grant = new NpgsqlCommand("""
+                    INSERT INTO "billing"."UserAccess"
+                        (user_id, has_lifetime_access, subscription_until, updated_at)
+                    VALUES (@user_id, TRUE, NULL, now())
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        has_lifetime_access = TRUE,
+                        subscription_until = NULL,
+                        updated_at = now();
+                    """, connection, tx);
+                grant.Parameters.AddWithValue("user_id", userId);
+                await grant.ExecuteNonQueryAsync(ct);
+            }
+            else if (plan == "monthly")
+            {
+                await using var grant = new NpgsqlCommand("""
+                    INSERT INTO "billing"."UserAccess"
+                        (user_id, has_lifetime_access, subscription_until, updated_at)
+                    VALUES (@user_id, FALSE, now() + interval '30 days', now())
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        subscription_until = GREATEST(
+                            COALESCE("UserAccess".subscription_until, now()),
+                            now()) + interval '30 days',
+                        updated_at = now()
+                    WHERE NOT "UserAccess".has_lifetime_access;
+                    """, connection, tx);
+                grant.Parameters.AddWithValue("user_id", userId);
+                await grant.ExecuteNonQueryAsync(ct);
+            }
+        }
         await tx.CommitAsync(ct);
         return Ok();
     }

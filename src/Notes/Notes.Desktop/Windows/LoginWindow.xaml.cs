@@ -7,6 +7,7 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
+        WindowTheme.Attach(this);
     }
     private async void LoginButton_Click(object sender,RoutedEventArgs e)
     {

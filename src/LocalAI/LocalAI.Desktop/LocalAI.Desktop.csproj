@@ -6,7 +6,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="../LocalAI.Api/LocalAI.Api.csproj" />
-  </ItemGroup>
 </Project>
