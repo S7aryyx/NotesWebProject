@@ -1,0 +1,28 @@
+﻿# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+# .NET build output
+**/bin/
+**/obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# IDE and temporary files
+.idea/
+.vscode/
+*.cache
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
