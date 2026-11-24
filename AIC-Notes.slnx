@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Notes/">
+    <Project Path="src/Notes/Notes.Core/Notes.Core.csproj" />
+    <Project Path="src/Notes/Notes.Api/Notes.Api.csproj" />
+    <Project Path="src/Notes/Notes.Desktop/Notes.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/Local AI/">
+    <Project Path="src/LocalAI/LocalAI.Api/LocalAI.Api.csproj" />
+    <Project Path="src/LocalAI/LocalAI.Desktop/LocalAI.Desktop.csproj" />
+  </Folder>
+</Solution>

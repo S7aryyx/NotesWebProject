@@ -1,0 +1,38 @@
+[
+  {
+    "ContainingType": "LocalAiApi.Controllers.ChatController",
+    "Method": "Chat",
+    "RelativePath": "api/chat",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LocalAiApi.Models.ChatRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LocalAiApi.Controllers.ChatController",
+    "Method": "Health",
+    "RelativePath": "api/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LocalAiApi.Controllers.ChatController",
+    "Method": "GetPrompts",
+    "RelativePath": "api/prompts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

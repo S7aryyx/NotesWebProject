@@ -1,0 +1,13 @@
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\bin\Debug\net8.0\Notes.Core.deps.json
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\bin\Debug\net8.0\Notes.Core.dll
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\bin\Debug\net8.0\Notes.Core.pdb
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.csproj.AssemblyReference.cache
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.AssemblyInfoInputs.cache
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.AssemblyInfo.cs
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.csproj.CoreCompileInputs.cache
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.dll
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\refint\Notes.Core.dll
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.pdb
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\ref\Notes.Core.dll
+C:\Users\Ilgam\Desktop\AIS_Folder\src\Notes\Notes.Core\obj\Debug\net8.0\Notes.Core.csproj.Up2Date

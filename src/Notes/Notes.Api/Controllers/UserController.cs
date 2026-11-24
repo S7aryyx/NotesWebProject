@@ -1,0 +1,239 @@
+using LocalJsonModule.DTOs.Users;
+using LocalJsonModule.Models;
+using LocalJsonModule.Services;
+using LocalJsonModule.Services.Auth;
+using LocalJsonModule.Services.Register;
+using LocalJsonModule.Services.Update;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
+namespace LocalWebModule.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+public class UserController : ControllerBase
+{
+    private readonly IRegisterService _registerService;
+    private readonly IAuthService _authService;
+    private readonly IUpdateService _updateService;
+    private readonly IUserService _userService;
+
+    public UserController(IUserService userService, IRegisterService registerService, IAuthService authService, IUpdateService updateService)
+    {
+        _userService = userService;
+        _registerService = registerService;
+        _authService = authService;
+        _updateService = updateService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var users = await _userService.GetAllAsync();
+            return Ok(users.Select(ToResponse));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        try
+        {
+            var user = await _userService.GetByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return Ok(ToResponse(user));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("{login}")]
+    public async Task<IActionResult> GetByLogin(string login)
+    {
+        try
+        {
+            var user = await _userService.GetByLoginAsync(login);
+
+            if (user == null)
+            {
+                return NotFound($"Пользователь с логином {login} не найден.");
+            }
+
+            return Ok(ToResponse(user));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("email/{email}")]
+    public async Task<IActionResult> GetByEmail(string email)
+    {
+        try
+        {
+            var user = await _userService.GetByEmailAsync(email);
+
+            if (user == null)
+            {
+                return NotFound($"Пользователь с email {email} не найден.");
+            }
+
+            return Ok(ToResponse(user));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("register")] //Fixed
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        try
+        {
+            User user = await _registerService.CreateAsync(request);
+
+            UserResponse response = new UserResponse(user.Id, user.Email, user.Login, user.CreatedAt);
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("login")] //Fixed
+    public async Task<IActionResult> Auth([FromBody] LoginRequest request)
+    {
+        try
+        {
+            var user = await _authService.LoginAsync(request);
+
+            if (user == null)
+            {
+                return BadRequest("Неверный логин или пароль.");
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Login)
+            };
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                });
+
+            var response = new UserResponse(user.Id, user.Email, user.Login, user.CreatedAt);
+            return Ok(response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRequest request)
+    {
+        try
+        {
+            bool updated = await _updateService.UpdateAsync(id, request);
+
+            if (!updated)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            bool deleted = await _userService.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(501, ex.Message);
+        }
+    }
+    private static UserResponse ToResponse(User user)
+    {
+        return new UserResponse(user.Id, user.Email, user.Login, user.CreatedAt);
+    }
+}

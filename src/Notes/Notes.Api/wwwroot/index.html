@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-icon">N</div>
+                <span class="brand-text">Notes</span>
+            </div>
+
+            <button id="sidebar_toggle" class="icon-button" title="Свернуть меню">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
+        </div>
+
+        <div class="sidebar-actions">
+            <button id="new_note_button" class="sidebar-action">
+                <i class="bi bi-plus-lg"></i>
+                <span>Новая заметка</span>
+            </button>
+
+            <button id="new_folder_button" class="sidebar-action secondary">
+                <i class="bi bi-folder-plus"></i>
+                <span>Новая папка</span>
+            </button>
+            <button id="delete_folder_button" class="sidebar-action danger" disabled>
+                <i class="bi bi-folder-x"></i>
+                <span>Удалить папку</span>
+            </button>
+        </div>
+
+        <div class="sidebar-section-title">Навигация</div>
+
+        <div id="navigation_tree" class="navigation-tree">
+            <!-- Дерево создаётся через app.js -->
+        </div>
+
+        <!-- ACCOUNT -->
+        <div class="account-card-wrapper">
+            <button id="account_button" class="account-card">
+                <div id="account_avatar" class="account-avatar">?</div>
+
+                <div class="account-info">
+                    <div id="sidebar_user_login" class="account-login">Пользователь</div>
+                    <div id="sidebar_user_email" class="account-email">email</div>
+                </div>
+
+                <i class="bi bi-chevron-right account-arrow"></i>
+            </button>
+        </div>
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <div id="page_title" class="page-title">Все заметки</div>
+                <div id="page_subtitle" class="page-subtitle">Ваши заметки</div>
+            </div>
+
+            <div class="topbar-actions">
+                <button id="refresh_button" class="btn btn-light" title="Обновить">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </header>
+
+
+        <section class="workspace">
+
+            <!-- NOTE LIST -->
+            <div class="notes-panel">
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">Заметки</div>
+                        <div id="notes_count" class="panel-subtitle">0 заметок</div>
+                    </div>
+
+                    <button id="panel_new_note_button" class="btn btn-dark btn-sm">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+
+                <div id="notes_list" class="notes-list">
+                </div>
+            </div>
+
+
+            <!-- EDITOR -->
+            <div class="editor-panel">
+
+                <div id="empty_editor" class="empty-editor">
+                    <div class="empty-editor-icon">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h3>Выберите заметку</h3>
+                    <p>Или создайте новую заметку, чтобы начать работу.</p>
+                    <button id="empty_new_note_button" class="btn btn-dark">
+                        <i class="bi bi-plus-lg"></i>
+                        Новая заметка
+                    </button>
+                </div>
+
+                <div id="note_editor" class="note-editor-container d-none">
+
+                    <div class="editor-toolbar">
+                        <div class="editor-status">
+                            <span id="note_status">Не сохранено</span>
+                        </div>
+
+                        <div class="editor-buttons">
+                            <button id="favorite_button" class="btn btn-sm btn-light">
+                                <i class="bi bi-star"></i>
+                                Избранное
+                            </button>
+
+                            <button id="archive_button" class="btn btn-sm btn-light">
+                                <i class="bi bi-archive"></i>
+                                Архив
+                            </button>
+
+                            <button id="delete_note_button" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="note-title-row">
+                        <input id="note_title" class="note-title-input" type="text" placeholder="Название заметки">
+                        <select id="note_type" class="form-select form-select-sm note-type-select">
+                            <option value="personal">Личное</option>
+                            <option value="work">Работа</option>
+                            <option value="study">Учёба</option>
+                            <option value="project">Проект</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+
+                    <div class="note-meta">
+                        <span id="note_folder_name" class="note-folder-label">
+                            <i class="bi bi-folder"></i>
+                            Без папки
+                        </span>
+                    </div>
+
+                    <textarea id="note_content" class="note-content" placeholder="Начните писать..."></textarea>
+
+                    <div class="editor-footer">
+                        <span id="note_updated" class="text-muted"></span>
+
+                        <button id="save_note_button" class="btn btn-dark">
+                            <i class="bi bi-check-lg"></i>
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+
+<!-- ACCOUNT MODAL -->
+<div class="modal fade" id="accountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content account-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Мой аккаунт</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body pt-0">
+                <div class="account-modal-avatar" id="modal_account_avatar">?</div>
+
+                <div class="account-details">
+                    <div class="account-detail">
+                        <span>Логин</span>
+                        <strong id="account_login">-</strong>
+                    </div>
+
+                    <div class="account-detail">
+                        <span>Email</span>
+                        <strong id="account_email">-</strong>
+                    </div>
+
+                    <div class="account-detail">
+                        <span>ID</span>
+                        <strong id="account_id" class="small-id">-</strong>
+                    </div>
+
+                    <div class="account-detail">
+                        <span>Дата регистрации</span>
+                        <strong id="account_created">-</strong>
+                    </div>
+                    <div class="account-detail">
+                        <span>Доступ к ИИ</span>
+                        <strong id="account_access_status">Проверка...</strong>
+                    </div>
+                    <div class="account-detail">
+                        <span>Тариф</span>
+                        <a href="/payment.html" class="btn btn-sm btn-outline-primary">Управление доступом</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button id="logout_button" class="btn btn-outline-danger w-100">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Выйти из аккаунта
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- FOLDER MODAL -->
+<div class="modal fade" id="folderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Новая папка</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <label for="folder_title" class="form-label">Название папки</label>
+                <input id="folder_title" type="text" class="form-control" placeholder="Например: Учёба">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                <button id="create_folder_button" class="btn btn-dark">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/app.js"></script>
+
+</body>
+</html>
